@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.5",
+  "version": "1.0.1",
+  "id": "F8400D26-ED85-4C2B-BBE5-17F9BAC03FD9",
+  "packageName": "com.icicilombard.teams.embee.champadminapp.dev.sayan",
+  "developer": {
+    "name": "Embee Software Pvt. Limited",
+    "websiteUrl": "https://dev.botframework.com",
+    "privacyUrl": "https://dev.botframework.com/privacy",
+    "termsOfUseUrl": "https://dev.botframework.com/termsofuse"
+  },
+  "name": {
+    "short": "Champ App - Admin",
+    "full": "Champ App - Admin"
+  },
+  "description": {
+    "short": "Champ App - Admin",
+    "full": "Champ App - Admin"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#D85028",
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://cc86e95e7118.ngrok.io/admin_initial",
+      "canUpdateConfiguration": true,
+      "scopes": [ "team", "groupchat" ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "*.ngrok.io",
+    "code.jquery.com",
+    "cdnjs.cloudflare.com",
+    "maxst.icons8.com",
+    "maxcdn.bootstrapcdn.com"
+  ]
+}

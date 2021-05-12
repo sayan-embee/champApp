@@ -1,0 +1,44 @@
+﻿{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.5",
+  "version": "1.0.1",
+  "id": "ae6f4853-0f2e-4804-88a2-47b5e1fe52bc",
+  "packageName": "com.pidilite.teams.embee.champsapp.dev.reports",
+  "developer": {
+    "name": "Embee Software Pvt. Limited",
+    "websiteUrl": "https://dev.botframework.com",
+    "privacyUrl": "https://dev.botframework.com/privacy",
+    "termsOfUseUrl": "https://dev.botframework.com/termsofuse"
+  },
+  "name": {
+    "short": "Champ App - Reports - V2",
+    "full": "Champ App - Reports - V2"
+  },
+  "description": {
+    "short": "Champ App - Reports",
+    "full": "Champ App - Reports"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#D85028",
+  "configurableTabs": [
+    {
+      "configurationUrl": "https://c44d4bbe8f7d.ngrok.io/report_initial",
+      "canUpdateConfiguration": true,
+      "scopes": [ "team", "groupchat" ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "*.ngrok.io",
+    "code.jquery.com",
+    "cdnjs.cloudflare.com",
+    "maxst.icons8.com",
+    "maxcdn.bootstrapcdn.com"
+  ]
+}

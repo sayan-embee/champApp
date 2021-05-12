@@ -1,0 +1,125 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "items": [
+            {
+              "type": "Image",
+              "style": "Person",
+              "url": "${awardedByPhotoUrl}",
+              "size": "Small",
+              "horizontalAlignment": "Right"
+            }
+          ],
+          "width": 40
+        },
+        {
+          "type": "Column",
+          "items": [
+            {
+              "type": "TextBlock",
+              "weight": "Bolder",
+              "text": "${awardedByName}",
+              "wrap": true
+            }
+          ],
+          "width": 60,
+          "verticalContentAlignment": "Center"
+        }
+      ],
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Sent applause to",
+      "size": "Medium",
+      "weight": "Lighter",
+      "wrap": true,
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "items": [
+            {
+              "type": "Image",
+              "style": "Person",
+              "url": "${awardRecipients[0].photoUrl}",
+              "size": "Small",
+              "horizontalAlignment": "Right"
+            }
+          ],
+          "width": 40
+        },
+        {
+          "type": "Column",
+          "items": [
+            {
+              "type": "TextBlock",
+              "weight": "Bolder",
+              "text": "${awardRecipients[0].name}",
+              "wrap": true
+            }
+          ],
+          "width": 60,
+          "verticalContentAlignment": "Center"
+        }
+      ],
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "Image",
+      "url": "${badge[0].badgeImage}",
+      "horizontalAlignment": "Center",
+      "spacing": "Large"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Vishvas  Behaviours",
+      "wrap": true,
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "TextBlock",
+      "text": "${behaviour}",
+      "wrap": true,
+      "horizontalAlignment": "Center",
+      "spacing": "None",
+      "color": "Accent"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Reason for applause",
+      "wrap": true,
+      "horizontalAlignment": "Center"
+    },
+    {
+      "type": "TextBlock",
+      "text": "${reason}",
+      "wrap": true,
+      "horizontalAlignment": "Center",
+      "spacing": "None",
+      "color": "Accent"
+    }
+  ],
+  "msteams": {
+    "entities": [
+      {
+        "type": "mention",
+        "text": "<at>${UPN}</at>",
+        "mentioned": {
+          "id": "${awardrecipentUserId}",
+          "name": "${UPN}"
+        }
+      }
+    ]
+  },
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.2"
+}

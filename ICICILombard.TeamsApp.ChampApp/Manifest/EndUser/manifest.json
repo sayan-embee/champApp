@@ -1,0 +1,58 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.5/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.5",
+  "version": "1.0.0",
+  "id": "F8400D26-ED85-4C2B-BBE5-17F9BAC03FC9",
+  "packageName": "com.pidilite.teams.embee.champsapp.dev.enduser",
+  "developer": {
+    "name": "Embee Software Pvt. Limited",
+    "websiteUrl": "https://dev.botframework.com",
+    "privacyUrl": "https://dev.botframework.com/privacy",
+    "termsOfUseUrl": "https://dev.botframework.com/termsofuse"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "Champ App -V2",
+    "full": "Development application for champs"
+  },
+  "description": {
+    "short": "Champ Testing app",
+    "full": "Champ App Messaging Extention"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [
+    {
+      "botId": "5ca3098c-6c7d-4080-9bc0-eefc4fc26f00",
+      "canUpdateConfiguration": true,
+      "commands": [
+        {
+          "id": "badge",
+          "type": "action",
+          "title": "Champ App Dev",
+          "description": "Applaud your colleague with badge",
+          "initialRun": true,
+          "fetchTask": true,
+          "context": [
+            "compose",
+            "message"
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "*.ngrok.io",
+    "code.jquery.com",
+    "cdnjs.cloudflare.com",
+    "maxst.icons8.com",
+    "maxcdn.bootstrapcdn.com"
+  ]
+}
