@@ -1,6 +1,7 @@
+
 .containerCard{
     display: block !important;
-    background-color: white !important;
+    background-color: transparent !important;
     margin: 0 auto !important;
 }
 
@@ -9,7 +10,7 @@
 }
 
 .badegCardWidth :hover{
-    background-color: #FFFFFF !important;
+    background-color: transparent !important;
 }
 
 .badgeImageCard{
@@ -18,7 +19,15 @@
     width: 160px !important;
 }
 
-.badgeImageCard :hover{
+.selectedBadge{
+    background-color: yellow !important;
+    font-size: 20px;
+}
+// .badgeImageCard :hover{
+//     background-color: #FFF1E6 !important;
+// }
+
+.badgeImageCardGridDiv :hover{
     background-color: #FFF1E6 !important;
 }
 
@@ -32,24 +41,42 @@
     margin: 20px;
 }
 
+.backButtonMessagingExtention{
+    display: flex;
+    align-items: center;
+}
 
+.backButtonMessagingExtention img{
+    margin-right: 5px !important;
+}
+
+.detailsBadgeDiv{
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
 
 .badgeText{
     color: #FF8000;
-    padding-top: 10px;
+    padding-left: 10px;
     font-weight:bold
 }
 
 .searchList{
     text-align: left;
     width: 100%;
-    max-height: 200px;
+    max-height: 150px;
     height: auto;
     box-shadow: 0px 6px 10px 0px #9e9999;
-    overflow: auto;
+    overflow-y: scroll;
     padding-top: 10px;
     padding-bottom: 10px;
+    scrollbar-width: none;
   }
+
+  .searchList::-webkit-scrollbar {
+    display: none;
+}
 
   .searchResultList:hover {
     background-color: rgba(0, 0, 0, 0.14);
@@ -61,17 +88,43 @@
 .searchResultList{
     padding: 5px;
     padding-left: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
-  .searchResultListEmployeeName{
-      
+.showSelectedEmployee{
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+}
+
+  .searchResultListEmployeeName{ 
       font-size: 14px;
   }
 
+  .personalChatMember{
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+     
+  }
+  
+//   .personalChatMember span{
+//     font-size: 16px;
+//   }
+
+  .detalisViswasDropdown li{
+      cursor: pointer;
+  }
+  
   .textAreaStyles{
       height:150px !important
   }
 
   .textAreaStyles textarea{
       height: 100% !important;
+  }
+
+  .invalidReason textarea{
+      border-bottom-color:red ;
   }

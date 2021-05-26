@@ -169,4 +169,10 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
         public string EmployeeEmail { get; set; }
     }
 
+    public class TeamsAwardRecipent
+    {
+        public string UserId { get; set; }
+        public string UPN { get; set; }
+    }
+
 }

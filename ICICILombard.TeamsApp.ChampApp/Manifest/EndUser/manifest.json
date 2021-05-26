@@ -15,15 +15,26 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "Champ App -V2",
-    "full": "Development application for champs"
+    "short": "Rewards and Recognitions",
+    "full": "Development application for Rewards and Recognitions"
   },
   "description": {
-    "short": "Champ Testing app",
-    "full": "Champ App Messaging Extention"
+    "short": "Show gratitude for peers who went above and beyond at work.",
+    "full": "Messaging Extention"
   },
   "accentColor": "#FFFFFF",
-  "bots": [],
+  "bots": [
+    {
+      "botId": "5ca3098c-6c7d-4080-9bc0-eefc4fc26f00",
+      "needsChannelSelector": false,
+      "isNotificationOnly": true,
+      "scopes": [
+        "team",
+        "personal",
+        "groupchat"
+      ]
+    }
+  ],
   "composeExtensions": [
     {
       "botId": "5ca3098c-6c7d-4080-9bc0-eefc4fc26f00",
@@ -32,8 +43,8 @@
         {
           "id": "badge",
           "type": "action",
-          "title": "Champ App Dev",
-          "description": "Applaud your colleague with badge",
+          "title": "Rewards and Recognitions ",
+          "description": "Applaud your colleague",
           "initialRun": true,
           "fetchTask": true,
           "context": [

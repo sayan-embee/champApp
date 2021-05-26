@@ -1,8 +1,8 @@
 import React from 'react';
 import { SearchIcon, ComposeIcon } from '@fluentui/react-icons-northstar';
 
-import { Flex, Button, Loader, FormInput, FormDatepicker } from "@fluentui/react-northstar";
-
+import { Button, Loader, Input, FormDatepicker, Text, FormInput, Flex } from "@fluentui/react-northstar";
+import { CSVLink } from "react-csv";
 
 import "./../styles.scss"
 
@@ -13,38 +13,53 @@ type MyState = {
     formDate?: any;
     toDate?: any;
     findContact?: any;
-    loading?: any
+    loading?: any;
+    downloadData?:any;
 };
 
 
 class ChampList extends React.Component<MyState> {
     state: MyState = {
         loading: true
-    };
 
-
-
-    componentDidMount() {
-        this.getAwardListInitial()
     }
 
-    getAwardListInitial() {
+    componentDidMount() {
+        this.search()
+    }
+
+    search() {
+        this.setState({
+            loading:true
+        })
         const data = {
-            "FromDate": "",
-            "ToDate": "",
-            "RecipentName": ""
+            "FromDate": this.state.formDate ? this.state.formDate : "",
+            "ToDate": this.state.toDate ? this.state.toDate : "",
+            "RecipentName": this.state.findContact ? this.state.findContact : ""
         }
         this.getAwardList(data)
     }
 
-    getAwardList(data: any) {
 
+    getAwardList(data: any) {
         getAwardListAPI(data).then((res) => {
             console.log("get award", res);
             if (res.status === 200) {
+                const downloadDataList = res.data.map((e: any) => {
+                    let b = {
+                        "Awarded By": e.awardedByName + ' ( ' + e.awardedByEmail + ' )',
+                        "Applaud Card":  e.cardName,
+                        "Awarded On": e.awardDate,
+                        "Values/Behaviors": e.behaviourName,
+                        "Received By": e.recipentEmail + ' ( ' + e.recipentName + ' )',
+                        "Notes": e.notes
+                    }
+                    return b
+                })
                 this.setState({
                     awardList: res.data,
-                    loading: false
+                    loading: false,
+                    downloadData:downloadDataList
                 })
             }
 
@@ -82,92 +97,61 @@ class ChampList extends React.Component<MyState> {
 
     }
 
-    search() {
-        const data = {
-            "FromDate": this.state.formDate ? this.state.formDate : "",
-            "ToDate": this.state.toDate ? this.state.toDate : "",
-            "RecipentName": this.state.findContact ? this.state.findContact : ""
-        }
-        this.getAwardList(data)
-    }
+    
 
     render() {
 
         return (
             <div>
 
-                {/* <div className="containterBox" > */}
-                <Flex className="pt-1 " vAlign="end" gap="gap.medium">
-                        
+    
+                <Flex className="pt-1" vAlign="end" gap="gap.smaller">
+                    <FormDatepicker label="From Date" onDateChange={(e, v) => this.fromDate(e, v)} styles={{boxShadow: 'rgba(157, 150, 150, 0.15) 0px 2px 0px 0px'}} />
+                    <FormDatepicker label="To Date" onDateChange={(e, v) => this.toDate(e, v)}  styles={{boxShadow: 'rgba(157, 150, 150, 0.15) 0px 2px 0px 0px'}}/>
+                    <FormInput label="Find Contact" name="Find Contact" placeholder="Find Contact" onChange={(e) => this.findContact(e)} className="champListFindContact" />
+                    <Button primary content="Search" onClick={() => this.search()}  />
+                    <Button disabled={(this.state.downloadData && this.state.downloadData.length > 0) ? false : true} content="Export">
+                        {this.state.downloadData && <CSVLink data={this.state.downloadData} filename={"reports-file" + new Date().toDateString() + ".csv"}>Export</CSVLink>}
+                    </Button>    
+                </Flex>
 
-                    </Flex>
-                    <div className="statisticsSerchDivButton">
-                    <FormDatepicker label="From Date" onDateChange={(e, v) => this.fromDate(e, v)} />
-                        <FormDatepicker label="To Date" onDateChange={(e, v) => this.toDate(e, v)} />
-                        <FormInput label="Find Contact" name="Find Contact" placeholder="Find Contact" onChange={(e) => this.findContact(e)} />
-                        <Button primary content="Search" icon={<SearchIcon />} styles={{ marginRight: "10px" }} onClick={() => this.search()} />
-                        <Button content="Export" icon={<ComposeIcon />} />
-
-                    </div>
-                {/* </div> */}
-
-
-
-                {/* </div> */}
                 {!this.state.loading ? <div>
-                    {this.state.awardList && !(this.state.awardList.length > 0) ? <table className="ViswasTable">
-
+                    {this.state.awardList && (this.state.awardList.length > 0) ? <table className="ViswasTable">
+                        <tr>
+                            <th className="tableTitle">Received By</th>
+                            <th>Award</th>
+                            <th style={{ paddingRight: '25px' }}> Date</th>
+                            <th style={{ paddingLeft: '54px' }}> Awarded By</th>
+                            <th style={{ paddingRight: '15px' }}>Values/Behaviors</th>
+                        </tr>
                         {this.state.awardList.map((e: any) => {
                             return <tr className="ViswasTableRow">
                                 <td>
-                                    <div className="tableTitle">
-                                        Person Name
-                                    </div>
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {e.recipentEmail}
-                                    </div>
+                                    {/* <div style={{ fontWeight: "bold" }}> */}
+                                    {e.recipentEmail}
+                                    {/* </div> */}
                                 </td>
-                                <td style={{ textAlign: "end" }}>
-                                    <img className="badgePageIcon" src={e.cardImage} />
-                                </td>
-                                <td style={{ textAlign: "start" }}>
-                                    <div className="tableTitle">
-                                        Award
-                                    </div>
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {e.cardName}
-                                    </div>
-                                </td>
-                                <td style={{ paddingLeft: "25px" }}>
-                                    <div className="tableTitle">
-                                        Date
-                                    </div>
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {e.awardDate}
+                                <td >
 
+                                    <div className="reportListImageDiv">
+                                        <img className="badgePageIcon" src={e.cardImage} />
+                                        <Text>{e.cardName}</Text>
                                     </div>
                                 </td>
-                                <td style={{ paddingLeft: "25px" }}>
-                                    <div className="tableTitle">
-                                        Given By
-                                    </div>
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {e.awardedByName}
-                                    </div>
+                                <td >
+                                    {e.awardDate}
                                 </td>
-                                <td style={{ textAlign: "end" }}>
-                                    <div className="tableTitle">
-                                        Viswas Behaviour
-                                    </div>
-                                    <div style={{ fontWeight: "bold" }}>
-                                        {e.behaviourName}
-                                    </div>
+                                <td style={{ paddingLeft: '54px' }}>
+                                    {e.awardedByName}
+                                </td>
+                                <td >
+                                    {e.behaviourName}
                                 </td>
                             </tr>
                         })}
 
 
-                    </table> : <div className="noDataText">No data Available</div>}</div> : <Loader label="Loading Data" styles={{ margin: "50px" }} />}
+                    </table> : <div className="noDataText">No Data Available</div>}</div> : <Loader styles={{ margin: "50px" }} />}
 
 
 

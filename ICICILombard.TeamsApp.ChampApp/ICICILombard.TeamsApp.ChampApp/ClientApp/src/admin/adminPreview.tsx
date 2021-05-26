@@ -3,6 +3,7 @@ import { Header, Flex, Button, Card, CardBody} from "@fluentui/react-northstar";
 import { ArrowRightIcon } from '@fluentui/react-icons-northstar';
 import "./../styles.scss"
 
+const rightArrowImage=require("./../assets/right-arrow.svg")
 
 interface IPreviewProps {
     history?: any;
@@ -52,6 +53,10 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
                 padding: '10px 20px 40px',
                 boxShadow: '0px 10px 13px rgb(0 0 0 / 2%)',
                 cursor: 'pointer',
+                backgroundColor: '#ffffff',
+                ':hover': {
+                  backgroundColor: '#ffffff',
+                },
               }}>
                 <CardBody></CardBody>
                 <svg xmlns="http://www.w3.org/2000/svg" width="57.667" height="57.667" viewBox="0 0 57.667 57.667">
@@ -85,16 +90,17 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
                   </g>
                 </svg>
   
-                <Header as="h4" content=" Vishvas Behaviours" style={{
+                <Header as="h4" content=" Values/Behaviors" style={{
                   paddingTop: '20px',
-                  marginBottom: '0'
+                  marginBottom: '0',
+                  color:"black",
                 }} />
                 {/* <Button  fluid circular icon={<ArrowRightIcon />} text title="Create" styles={{
                   textAlign:'right'
                   
                 }} /> */}
                 <Flex hAlign="end" vAlign="end" gap="gap.smaller">
-                  <Button className="curve-btn" icon={<ArrowRightIcon />} title="Microphone" onClick={()=>this.viswas()} />
+                  <Button className="curve-btn" title="Values/Behaviour" onClick={()=>this.viswas()} ><img src={rightArrowImage.default}/></Button>
                 </Flex>
               </Card>
             </Flex>
@@ -126,11 +132,11 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
   
                 <Header as="h4" content="Applaud  Cards" style={{
                   paddingTop: '20px',
-                  marginBottom: '0'
+                  marginBottom: '0',
+                  color:"black",
                 }} />
-                {/* <Button circular icon={<ArrowRightIcon />} text title="Arrow" />   */}
-                <Flex hAlign="end" vAlign="end" gap="gap.smaller">
-                  <Button className="curve-btn" icon={<ArrowRightIcon />} title="Microphone" onClick={()=>this.card()}/>
+                <Flex hAlign="end" vAlign="end" gap="gap.smaller"> 
+                  <Button className="curve-btn" title="Applause Card" onClick={()=>this.card()}><img src={rightArrowImage.default}/></Button>
                 </Flex>
               </Card>
             </Flex>
@@ -161,10 +167,11 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
   
                 <Header as="h4" content="Settings" style={{
                   paddingTop: '20px',
-                  marginBottom: '0'
+                  marginBottom: '0',
+                  color:"black",
                 }} />
                 <Flex hAlign="end" vAlign="end" gap="gap.smaller">
-                  <Button className="curve-btn" icon={<ArrowRightIcon />} title="Microphone" onClick={()=>this.setting()} />
+                  <Button className="curve-btn" title="Settings" onClick={()=>this.setting()} ><img src={rightArrowImage.default}/></Button>
                 </Flex>
               </Card>
             </Flex>

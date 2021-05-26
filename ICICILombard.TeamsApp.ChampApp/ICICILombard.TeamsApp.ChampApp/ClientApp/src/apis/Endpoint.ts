@@ -13,8 +13,9 @@ export const routers = {
     getappsetting:'getappsetting',
     updateappsetting:'updateappsetting',
     getawardlist:"getawardlist",
+    getawardedemployee:"getawardedemployee",
     getawardlistbycard:"getawardlistbycard",
-    getawardedemployee:"getawardedemployee"
+    getawardlistbyrecipent:"getawardlistbyrecipent"
 }
 export const getUrl = (key: any) => {
     return base_URL + key;

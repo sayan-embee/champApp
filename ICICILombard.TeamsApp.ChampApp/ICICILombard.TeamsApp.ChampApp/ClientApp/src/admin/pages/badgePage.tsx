@@ -1,16 +1,28 @@
 import React from 'react';
-import { EditIcon, PaperclipIcon, ArrowLeftIcon } from '@fluentui/react-icons-northstar';
-import { Header, Input, Flex, Button, Card, CardBody, FormInput, Form, Dialog, Text, Divider } from "@fluentui/react-northstar";
+
+import { Header, Flex, Button, Text, Loader } from "@fluentui/react-northstar";
+import * as microsoftTeams from "@microsoft/teams-js";
 
 import "./../styles.scss"
 
-import { getApplauseCardAPI, addApplauseCardAPI } from "./../../apis/ApplauseCardApi"
+import { getApplauseCardAPI } from "./../../apis/ApplauseCardApi"
 
 import Toggle from 'react-toggle'
 // import ImageUploader from 'react-images-upload';
 
+const base_URL = window.location.origin
+const editImage = require("./../../assets/edit.svg")
+const backImage = require("./../../assets/left-arrow.svg")
 
-
+interface ITaskInfo {
+    title?: string;
+    height?: number;
+    width?: number;
+    url?: string;
+    card?: string;
+    fallbackUrl?: string;
+    completionBotId?: string;
+}
 
 interface IBadgeProps {
     history?: any;
@@ -19,11 +31,9 @@ interface IBadgeProps {
 
 interface MyState {
     BadgeList?: any;
-    addNewInputName?: any;
-    editActiveStatusValue?: any;
-    editNameValue?: any;
     base64Image?: any;
-    editActiveStatus?: any
+    loading?: any;
+    url?: any
 };
 
 
@@ -32,7 +42,8 @@ class Badge extends React.Component<IBadgeProps, MyState> {
     constructor(props: IBadgeProps) {
         super(props);
         this.state = {
-            editActiveStatus: false
+            loading: true,
+            url: base_URL + '/addbadge'
         };
     }
 
@@ -49,102 +60,57 @@ class Badge extends React.Component<IBadgeProps, MyState> {
             console.log("get ApplauseCard API", res);
             this.setState({
                 BadgeList: res.data,
-                base64Image: null
+                base64Image: null,
+                loading: false
             })
 
         })
     }
 
 
-    addApplauseCard(data: any) {
-        addApplauseCardAPI(data).then((res) => {
-            if (res.data.successFlag === 1) {
-                this.getApplauseCard()
-            }
-
-        })
-    }
 
 
 
-    addNewInput(event: any) {
-        this.setState({
-            addNewInputName: event.target.value
-        })
-    }
-
-    addNew() {
-        if (this.state.addNewInputName && this.state.base64Image) {
-            const data = {
-                "CardId": 0,
-                "CardName": this.state.addNewInputName,
-                "CardImage": this.state.base64Image,
-                "IsActive": 1
-
-            }
-            this.addApplauseCard(data)
-            console.log("addNew badge", data);
-
+    addNewTaskModule = () => {
+        let taskInfo: ITaskInfo = {
+            url: this.state.url,
+            title: "Create New Applaud Card",
+            height: 350,
+            width: 600,
+            fallbackUrl: this.state.url,
         }
-        else {
-            alert("All the fields are required")
+        console.log("task module", taskInfo);
+        let submitHandler = (err: any, result: any) => {
+            console.log("errr", err);
+            console.log("result", result);
+            this.getApplauseCard()
+        };
+
+        microsoftTeams.tasks.startTask(taskInfo, submitHandler);
+    }
+
+    editTaskModule = (data: any) => {
+        let taskInfo: ITaskInfo = {
+            url: `${base_URL}/editbadge?id=${data.cardId}&name=${data.cardName}&active=${data.isActive}`,
+            title: "Edit Applaud Card",
+            height: 350,
+            width: 600,
+            fallbackUrl: this.state.url,
         }
-    }
-
-    editActiveStatus = (e: any) => {
-        this.setState({
-            editActiveStatusValue: e.target.checked ? 1 : 0,
-            editActiveStatus: true
-        })
-    }
-
-
-    editName(e: any) {
-        this.setState({
-            editNameValue: e.target.value
-        })
-    }
-
-    editFunction(data: any) {
-        const Value = {
-            "CardId": data.cardId,
-            "CardName": this.state.editNameValue ? this.state.editNameValue : data.cardName,
-            "CardImage": this.state.base64Image ? this.state.base64Image : data.cardImage,
-            "IsActive": this.state.editActiveStatus ? this.state.editActiveStatusValue : data.isActive
-        }
-        this.addApplauseCard(Value)
-        console.log("check", data);
-
-    }
-    fileUpload() {
-        (document.getElementById('upload') as HTMLInputElement).click()
-    };
-
-    onFileChoose(event: any) {
-        console.log("check", event.target.files[0], event.target.files[0].lastModified);
-        this.getBase64(event.target.files[0], event.target.files[0].lastModified)
-    }
-
-    getBase64(file: any, name: any) {
-        var reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-            console.log('Photo', reader.result);
+        console.log("task module", taskInfo);
+        let submitHandler = (err: any, result: any) => {
             this.setState({
-                base64Image: reader.result,
+                loading:true
+            },()=>{
+                this.getApplauseCard()
             })
+            
         };
-        reader.onerror = function (error) {
-            console.log('Error: ', error);
-        };
+
+        microsoftTeams.tasks.startTask(taskInfo, submitHandler);
     }
 
 
-    cancel(){
-        this.setState({
-            base64Image:null
-        })
-    }
     back() {
         this.props.history.push(`/admin_preview`)
     }
@@ -155,85 +121,34 @@ class Badge extends React.Component<IBadgeProps, MyState> {
         return (
             <div className="containterBox">
                 <div>
-                    <div className="displayFlex">
-                        <Button onClick={() => this.back()} icon={<ArrowLeftIcon />} text content="Back" />
+                    <div className="displayFlex" style={{ alignItems: "center" }}>
+                        <div className="backButton pointer" onClick={() => this.back()}>
+                            <img src={backImage.default}/>
+                        </div>
 
-                        <Header as="h2" content="Applaud Cards" style={{ margin: '0', fontWeight: 'lighter' }}></Header>
+                        <Header as="h3" content="Applaud Cards" className="headingText"></Header>
+                        <div className="addNewDiv">
+                            <Button primary content="+Add New" className="addNewButton" onClick={() => this.addNewTaskModule()} />
+                        </div>
                     </div>
-                    <Dialog
-                        cancelButton="Cancel"
-                        confirmButton="+ Add"
-                        content={{
-                            children: (Component, props) => {
-                                const { styles } = props
-                                return (
-                                    <div style={{ marginBottom: "30px" }}>
-                                        <div className="displayFlex">
-                                            <img src="https://image.freepik.com/free-vector/abstract-logo-flame-shape_1043-44.jpg" className="logoIcon" />
-                                            <div className="displayFlex logoText">
-                                                <Text size="large" weight="bold">Applaud Cards</Text>
-                                                <Text size="medium">Create New</Text>
-                                            </div>
-                                        </div>
-                                        <Divider />
-                                        <Card fluid styles={{
-                                            display: 'block',
-                                            backgroundColor: 'white',
-                                            padding: '0',
-                                            marginBottom: '40px',
-                                            ':hover': {
-                                                backgroundColor: 'white',
-                                            },
-                                        }}>
-                                            <CardBody>
 
-                                                <Form styles={{
-                                                    paddingTop: '25px',
-                                                    marginBottom: "10px"
-                                                }}>
-                                                    <FormInput
-                                                        label="Name"
-                                                        name="Name"
-                                                        id="Name"
-                                                        required fluid
-                                                        onChange={(e) => this.addNewInput(e)}
-                                                        showSuccessIndicator={false}
-                                                    />
-
-
-                                                </Form>
-                                            </CardBody>
-                                            <div style={{ display: "flex", flexDirection: "column" }}>
-                                                <Text> Attach Icon</Text>
-                                                <Input type="file" id="upload" style={{ display: 'none' }} onChange={value => this.onFileChoose(value)}></Input>
-
-                                                <Button onClick={() => this.fileUpload()} className='cameraBtn'>
-                                                    <PaperclipIcon /> Upload Photo
-                                                </Button>
-                                            </div>
-                                            {this.state.base64Image && <img src={this.state.base64Image} className="badgePageEditIcon" />}
-                                        </Card>
-                                    </div>
-                                )
-                            },
-                        }}
-                        onConfirm={() => this.addNew()}
-                        onCancel={()=>this.cancel()}
-                        trigger={<Button primary content="+Add New" className="addNewButton" />}
-                    />
                 </div>
 
-                <table className="ViswasTable">
+                {!this.state.loading ? <table className="ViswasTable">
                     <tr>
                         <th>Name</th>
                         <th>Icon</th>
                         <th style={{ textAlign: "center", paddingRight: '25px' }}>Active</th>
-                        <th style={{ textAlign: "end", paddingRight: '25px' }}>Action</th>
+                        <th style={{ textAlign: "end", paddingRight: '45px' }}>Action</th>
                     </tr>
                     {this.state.BadgeList && this.state.BadgeList.map((e: any) => {
                         return <tr className="ViswasTableRow">
                             <td>{e.cardName}</td>
-                            <td><img src={e.cardImage} className="badgePageIcon" /></td>
+                            <td>
+                            <div className="reportListImageDiv">
+                                <img src={e.cardImage} className="badgePageIcon" />
+                                </div>
+                                </td>
                             <td>
                                 <Flex styles={{ alignItems: "center", justifyContent: "center" }}>
                                     <Toggle disabled={true} defaultChecked={(e.isActive === 1) ? true : false} icons={false} />
@@ -242,72 +157,16 @@ class Badge extends React.Component<IBadgeProps, MyState> {
 
                             </td>
                             <td style={{ textAlign: "end" }}>
-                                <div style={{marginRight:"10px"}}> <Dialog
-                                    cancelButton="Cancel"
-                                    confirmButton="+ Add"
-                                    content={{
-                                        children: (Component, props) => {
-                                            return (
-                                                <div style={{ marginBottom: "40px" }}>
-                                                    <div className="displayFlex">
-                                                        <img src="https://image.freepik.com/free-vector/abstract-logo-flame-shape_1043-44.jpg" className="logoIcon" />
-                                                        <div className="displayFlex logoText">
-                                                            <Text size="large" weight="bold">Applaud Cards</Text>
-                                                            <Text size="medium">Editw</Text>
-                                                        </div>
-                                                    </div>
-                                                    <Divider />
-                                                    <div style={{
-                                                        paddingTop: '20px'
-                                                    }}>
-                                                        <FormInput
-                                                            label="Name"
-                                                            name="Name"
-                                                            id="Name"
-                                                            defaultValue={e.cardName}
-                                                            required fluid
-                                                            onChange={(e) => this.editName(e)}
-                                                            showSuccessIndicator={false}
-                                                        />
-
-                                                        <div style={{ display: "flex", flexDirection: "column", marginTop: "15px" }}>
-                                                            <Text> Change Icon</Text>
-                                                            <Input type="file" id="upload" style={{ display: 'none' }} onChange={value => this.onFileChoose(value)}></Input>
-                                                            <Button onClick={() => this.fileUpload()} className='cameraBtn'>
-                                                                <PaperclipIcon styles={{ marginRight: "5px" }} /> Upload Photo
-                                                        </Button>
-                                                        </div>
-                                                        {this.state.base64Image ? <img src={this.state.base64Image} className="badgePageEditIcon" /> :
-                                                         <img src={e.cardImage} className="badgePageEditIcon" />}
-                                                        <div className="outerDivToggleRadioGroup">
-                                                            <Text styles={{ marginRight: "5px" }}> Active Status </Text>
-                                                            <Toggle defaultChecked={e.isActive} icons={false} onChange={(e) => this.editActiveStatus(e)} ></Toggle>
-                                                            {/* <RadioGroup
-                                                            defaultCheckedValue={e.active ? 1 : 2}
-                                                            onCheckedValueChange={this.editActiveStatus}
-                                                            items={[
-                                                                { label: 'True', value: 1 },
-                                                                { label: 'False', value: 2 },
-                                                            ]}
-                                                        /> */}
-                                                        </div>
-
-                                                    </div>
-                                                </div>
-
-                                            )
-                                        },
-                                    }}
-                                    onConfirm={() => this.editFunction(e)}
-                                    onCancel={()=>this.cancel()}
-                                    trigger={<Button icon={<EditIcon />} text iconOnly>Edit</Button>}
-                                /></div>
+                                <div className="tableEditDiv">
+                                    <div style={{ marginRight: "10px" }}> Edit </div>
+                                    <div className="editButton pointer" onClick={() => this.editTaskModule(e)}  ><img src={editImage.default} /></div>
+                                </div>
                             </td>
                         </tr>
                     })}
 
 
-                </table>
+                </table> : <Loader styles={{ margin: "50px" }} />}
 
             </div>
         );

@@ -49,6 +49,12 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
         /// </summary>
         private readonly string appId;
 
+
+        /// <summary>
+        /// TenantId.
+        /// </summary>
+        private readonly string tenantId;
+
         /// <summary>
         /// Bot adapter to get context.
         /// </summary>
@@ -114,28 +120,69 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
 
             this.superUserSettings = superUserSettings.CurrentValue;
             this.keyVaultBaseUrl = this.superUserSettings.BaseUrl;
-            
+
 
             this.keyVaultHelper = keyVaultHelper;
             this.graphServiceClientHelper = graphServiceClientHelper;
             this.appBaseUrl = this.configurationSettings.AppBaseUri;
+            this.tenantId = this.configurationSettings.TenantId;
             this.applicationDetailProvider = applicationDetailProvider;
         }
 
+        /* [Route("teammembers1")]
+         public  async Task<IActionResult> GetTeamMembers1Async([FromHeader] string authorization, string teamId)
+         {
+
+
+
+             try
+             {
+                 string ssoToken = authorization.Substring("Bearer".Length + 1);
+
+                 if (teamId == null)
+                 {
+                     return this.BadRequest(new { message = "Team ID cannot be empty." });
+                 }                
+                 var members=await this.graphServiceClientHelper.GetTeamMembersAsync(teamId);
+
+                 return  this.Ok(members);
+             }
+             catch (Exception ex)
+             {
+                 this.logger.LogError(ex, "Error occurred while getting team member list.");
+                 throw;
+             }
+         }*/
         [Route("teammembers")]
-        public  async Task<IActionResult> GetTeamMembersAsync([FromHeader] string authorization, string teamId)
+        public async Task<IActionResult> GetTeamMembersAsync([FromHeader] string authorization, string teamId)
         {
             try
             {
-                string ssoToken = authorization.Substring("Bearer".Length + 1);
-
                 if (teamId == null)
                 {
                     return this.BadRequest(new { message = "Team ID cannot be empty." });
-                }                
-                var members=await this.graphServiceClientHelper.GetTeamMembersAsync(teamId);
+                }
 
-                return  this.Ok(members);
+                var userClaims = this.GetUserClaims();
+
+                IEnumerable<TeamsChannelAccount> teamsChannelAccounts = new List<TeamsChannelAccount>();
+                var conversationReference = new ConversationReference
+                {
+                    ChannelId = teamId,
+                    ServiceUrl = userClaims.ServiceUrl,
+
+                };
+
+                await this.botAdapter.ContinueConversationAsync(
+                    this.appId,
+                    conversationReference,
+                    async (context, token) =>
+                    {
+                        teamsChannelAccounts = await TeamsInfo.GetTeamMembersAsync(context, teamId, default);
+                    },
+                    default);
+
+                return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
             }
             catch (Exception ex)
             {
@@ -150,27 +197,40 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
         {
             try
             {
-                try
+                if (chatId == null)
                 {
-                    string ssoToken = authorization.Substring("Bearer".Length + 1);
+                    return this.BadRequest(new { message = "Team ID cannot be empty." });
+                }
 
-                    if (chatId == null)
+                var userClaims = this.GetUserClaims();
+
+                IEnumerable<TeamsChannelAccount> teamsChannelAccounts = new List<TeamsChannelAccount>();
+
+                var conversationReference = new ConversationReference()
+                {
+                    Conversation = new ConversationAccount()
                     {
-                        return this.BadRequest(new { message = "Chat ID cannot be empty." });
-                    }
-                    var members = await this.graphServiceClientHelper.GetChatMembersAsync(chatId);
+                        Id = chatId,
+                        TenantId = this.tenantId
+                    },
+                    ServiceUrl = userClaims.ServiceUrl,
+                };
 
-                    return this.Ok(members);
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex, "Error occurred while getting chat member list.");
-                    throw;
-                }
+
+                await this.botAdapter.ContinueConversationAsync(
+                    this.appId,
+                    conversationReference,
+                    async (context, token) =>
+                    {
+                        teamsChannelAccounts = await TeamsInfo.GetMembersAsync(context, default);
+                    },
+                    default);
+
+                return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Error occurred while getting chat member list.");
+                this.logger.LogError(ex, "Error occurred while getting team member list.");
                 throw;
             }
         }
@@ -182,7 +242,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
 
         [HttpPost]
         [Route("addvishvasbehaviour")]
-        public async Task<IActionResult>AddVishvasBehaviour(VishvasBehaviour request)
+        public async Task<IActionResult> AddVishvasBehaviour(VishvasBehaviour request)
         {
             try
             {
@@ -366,7 +426,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
                 viswasBehaviourList.Add(new ViswasBehaviour() { Title = "Walking Togather", Id = "1" });
                 viswasBehaviourList.Add(new ViswasBehaviour() { Title = "Genorisity", Id = "2" });
 
-                return this.Ok(await Task.FromResult( viswasBehaviourList));
+                return this.Ok(await Task.FromResult(viswasBehaviourList));
             }
             catch (Exception ex)
             {
@@ -386,13 +446,13 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
             try
             {
                 List<BadgeDetail> badgeDetailList = new List<BadgeDetail>();
-                badgeDetailList.Add(new BadgeDetail() { Name = "Platinium", Id = "1", Description= "Platinium",ImageUrl= this.appBaseUrl+"/images/platinum.png",Color= "#cfe8fd" });
+                badgeDetailList.Add(new BadgeDetail() { Name = "Platinium", Id = "1", Description = "Platinium", ImageUrl = this.appBaseUrl + "/images/platinum.png", Color = "#cfe8fd" });
                 badgeDetailList.Add(new BadgeDetail() { Name = "Gold", Id = "2", Description = "Gold", ImageUrl = this.appBaseUrl + "/images/gold.png", Color = "#fbcd7c" });
                 badgeDetailList.Add(new BadgeDetail() { Name = "Silver", Id = "3", Description = "Silver", ImageUrl = this.appBaseUrl + "/images/silver.png", Color = "#efedea" });
                 badgeDetailList.Add(new BadgeDetail() { Name = "Bronze", Id = "4", Description = "Bronze", ImageUrl = this.appBaseUrl + "/images/bronze.png", Color = "#fbd5bd" });
                 badgeDetailList.Add(new BadgeDetail() { Name = "Well done", Id = "5", Description = "Bronze", ImageUrl = this.appBaseUrl + "/images/welldone.png", Color = "#c0fdaa" });
                 badgeDetailList.Add(new BadgeDetail() { Name = "Thank you", Id = "6", Description = "Thank you", ImageUrl = this.appBaseUrl + "/images/thankyou.png", Color = "#d597f9" });
-              
+
                 return this.Ok(await Task.FromResult(badgeDetailList));
             }
             catch (Exception ex)
@@ -401,131 +461,6 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
                 throw;
             }
         }
-
-        /// <summary>
-        /// Get call to retrieve list of all badges created in Issuer group.
-        /// </summary>
-        /// <param name="email">User's Teams account email ID.</param>
-        /// <returns>Returns collection of all badges created in Issuer group.</returns>
-       /* [Route("allbadges")]
-        public async Task<IActionResult> GetAllBadges(string email)
-        {
-            try
-            {
-                var userBadgrRole = await this.AssignBadgrUserRoleAsync(email);
-                if (string.IsNullOrEmpty(userBadgrRole))
-                {
-                    this.logger.LogError("Failed to fetch or add user to role.");
-                    return this.GetErrorResponse(StatusCodes.Status400BadRequest, "Failed to fetch or add user to role.");
-                }
-
-                var allBadges=new List<string>() ;// await this.badgeUserHelper.GetAllBadgesAsync();
-
-                this.logger.LogInformation("Call to badge service succeeded");
-                return this.Ok(new { allBadges, userBadgrRole });
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                this.logger.LogError(ex, "Failed to get user Badgr token to make call to API.");
-                return this.GetErrorResponse(StatusCodes.Status401Unauthorized, "Badgr access token for user is found empty.");
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error while making call to badge service.");
-                return this.GetErrorResponse(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }*/
-
-        /// <summary>
-        /// Get call to retrieve list of badges earned by the user in Issuer group.
-        /// </summary>
-        /// <returns>Returns collection of earned badges created in Issuer group.</returns>
-       /* [Route("earnedbadges")]
-        [HttpGet]
-        public async Task<IActionResult> GetEarnedBadges()
-        {
-            try
-            {
-                var earnedBadges = await this.badgeUserHelper.GetEarnedBadgesAsync();
-
-                this.logger.LogInformation("Call to badge service succeeded");
-                return this.Ok(earnedBadges);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                this.logger.LogError(ex, "Failed to get user token to make call to API.");
-                return this.GetErrorResponse(StatusCodes.Status401Unauthorized, "Badgr access token for user is found empty.");
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error while making call to badge service.");
-                return this.GetErrorResponse(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }*/
-
-        /// <summary>
-        /// Post call to award badge to multiple user.
-        /// </summary>
-        /// <param name="assertionDetails">Recipient and award details.</param>
-        /// <returns>Returns true for successful operation.</returns>
-       /* [Route("awardbadge")]
-        [HttpPost]
-        public async Task<IActionResult> AwardBadgeToUsersAsync([FromBody] AssertionDetail assertionDetails)
-        {
-            try
-            {
-                if (assertionDetails == null)
-                {
-                    return this.BadRequest(new { message = "Details for awarding badge cannot be empty." });
-                }
-
-                return this.Ok(await this.badgeUserHelper.AwardBadgeToUsersAsync(assertionDetails));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                this.logger.LogError(ex, "Failed to get user token to make call to API.");
-                return this.GetErrorResponse(StatusCodes.Status401Unauthorized, "Badgr access token for user is found empty.");
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error while making call to badge service.");
-                return this.GetErrorResponse(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }*/
-
-        /// <summary>
-        /// Assign user staff role if its first time sign in.
-        /// </summary>
-        /// <param name="userTeamsEmail">Logged in user's Teams account email ID.</param>
-        /// <returns>Returns user role.</returns>
-      /*  private async Task<string> AssignBadgrUserRoleAsync(string userTeamsEmail)
-        {
-            try
-            {
-                // If user email ID matches with email used for login in Badgr, then check if user has any role in issuer group.
-                var userRoleInBadgr = await this.badgeIssuerHelper.GetUserRoleAsync(userTeamsEmail);
-
-                if (string.IsNullOrEmpty(userRoleInBadgr))
-                {
-                    // If user is not part of Issuer group, then add user in issuer group and assign "staff" role to user.
-                    var userProfile = await this.badgrUserHelper.GetBadgeUserDetailsAsync();
-
-                    userRoleInBadgr = await this.badgeIssuerHelper.AssignUserRoleAsync(userProfile);
-                }
-
-                return userRoleInBadgr;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                this.logger.LogError(ex, "Failed to get user token to make call to API.");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error while making call to badge service.");
-                return null;
-            }
-        }*/
 
         /// <summary>
         /// Get claims of user.

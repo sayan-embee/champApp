@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\icici\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj": {}
+    "D:\\champApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj": {}
   },
   "projects": {
-    "D:\\icici\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj": {
+    "D:\\champApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\icici\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj",
+        "projectUniqueName": "D:\\champApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj",
         "projectName": "ICICILombard.TeamsApp.ChampApp",
-        "projectPath": "D:\\icici\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj",
+        "projectPath": "D:\\champApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp.csproj",
         "packagesPath": "C:\\Users\\011873\\.nuget\\packages\\",
-        "outputPath": "D:\\icici\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\obj\\",
+        "outputPath": "D:\\champApp\\ICICILombard.TeamsApp.ChampApp\\ICICILombard.TeamsApp.ChampApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

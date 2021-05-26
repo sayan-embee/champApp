@@ -35,7 +35,7 @@ class AdminInitial extends React.Component<MyState> {
                 websiteUrl: url,
                 contentUrl: url+'/admin_preview',
                 entityId: "adminTab",
-                suggestedDisplayName: "Champ App Admin"
+                suggestedDisplayName: "Settings"
             });
             saveEvent.notifySuccess();
         });

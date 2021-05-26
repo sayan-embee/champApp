@@ -35,7 +35,7 @@ class ReportInitial extends React.Component<MyState> {
                 websiteUrl: url,
                 contentUrl: url+'/admin_award',
                 entityId: "reportTab",
-                suggestedDisplayName: "Champ App Report"
+                suggestedDisplayName: "Rewards and Recognitions"
             });
             saveEvent.notifySuccess();
         });

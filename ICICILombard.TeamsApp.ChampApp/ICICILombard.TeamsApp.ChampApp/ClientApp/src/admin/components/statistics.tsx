@@ -1,192 +1,219 @@
 import React from 'react';
-import { SearchIcon } from '@fluentui/react-icons-northstar';
 
-import { Header, Flex, Text, Button, Card, CardBody, FlexItem,  FormDropdown } from "@fluentui/react-northstar";
+import { Header, Flex, Text, Button, Card, CardBody, FlexItem, FormDropdown, Loader } from "@fluentui/react-northstar";
 
 
 import "./../styles.scss"
-import { getAwardListByCardAPI } from './../../apis/AwardListApi'
+import { getAwardListByCardAPI, getAwardListByRecipentAPI } from './../../apis/AwardListApi'
 import { getApplauseCardAPI } from "./../../apis/ApplauseCardApi"
 import { getAwardedEmployeeAPI } from "./../../apis/AwardedEmployeeApi"
 
 type MyState = {
     awardList?: any;
-    BadgeList?: any;
     findContact?: any;
-    byAwardListInput?: any;
-    CardId?: any;
-    AwardedEmployeeList?:any;
-    AwardedEmployeeName?:any;
-    AwardedEmployeeEmail?:any
+    searchListInput?: any;
+    searchListInputValue?:any;
+    applauseCardList?: any;
+    applauseCardId?: any;
+    awardedEmployeeList?: any;
+    awardedEmployeeName?: any;
+    awardedEmployeeEmail?: any;
+    searchByList?: any;
+    selectedSearchByValue?: any;
+    loading?: any;
 };
 
 class Statistics extends React.Component<MyState> {
     state: MyState = {
-
+        searchByList: ["By Award", "By Employee"],
+        loading: true
     };
 
 
 
     componentDidMount() {
-        this.getApplauseCard()
-        this.getAwardedEmployee()
-    }
-
-    getAwardedEmployee(){
-        getAwardedEmployeeAPI().then((res)=>{
-            console.log("get Awarded Employee API",res);
-            let AwardedEmployeeName = res.data.map((a: any) => a.employeeEmail)
-            this.setState({
-                AwardedEmployeeName:AwardedEmployeeName,
-                AwardedEmployeeList:res.data
-            })
+        this.setState({
+            selectedSearchByValue: this.state.searchByList[0]
+        }, () => {
+            this.getSearchListInput(this.state.selectedSearchByValue)
         })
+
     }
 
-    getApplauseCard() {
-        const data = {
-            "CardId": 0
-        }
-        getApplauseCardAPI(data).then((res) => {
-            console.log("get ApplauseCard API", res.data);
-            let result = res.data.map((a: any) => a.cardName)
-            this.setState({
-                BadgeList: res.data,
-                byAwardListInput: result
-            }, () => {
-                console.log(this.state.BadgeList[0].cardId);
-                this.getAwardListInitial()
-            })
-
+    selectSearchByValueFunction = (data: any) => {
+        console.log(data);
+        this.setState({
+            selectedSearchByValue: data
+        }, () => {
+            this.getSearchListInput(this.state.selectedSearchByValue)
         })
+
     }
 
-    getAwardListInitial() {
-        const data = {
-            "FromDate": "",
-            "ToDate": "",
-            "CardId": this.state.BadgeList[0].cardId
+
+    //////////////////////////////// function for getting serarch list inputs /////////////////
+    getSearchListInput(data: any) {
+        if (data === 'By Award') {
+            const data = {
+                "CardId": 0
+            }
+            getApplauseCardAPI(data).then((res) => {
+                console.log("get ApplauseCard API", res.data);
+                let result = res.data.map((a: any) => a.cardName)
+                this.setState({
+                    applauseCardList: res.data,
+                    searchListInput: result,
+                    searchListInputValue:result[0],
+                    applauseCardId: res.data[0].cardId
+                }, () => {
+                    this.search()
+                })
+
+            })
         }
-        this.getAwardList(data)
+        else {
+            getAwardedEmployeeAPI().then((res) => {
+                console.log("get Awarded Employee API", res);
+                let AwardedEmployeeName = res.data.map((a: any) => a.employeeEmail)
+                this.setState({
+                    searchListInput: AwardedEmployeeName,
+                    searchListInputValue:AwardedEmployeeName[0],
+                    awardedEmployeeList: res.data,
+                    awardedEmployeeEmail: res.data[0].employeeName,
+                    awardedEmployeeName: res.data[0].employeeEmail
+
+                }, () => {
+                    this.search()
+                })
+            })
+        }
+
     }
 
 
+    /////////////////////// Api call for getting all the award ///////////////////////
     getAwardList(data: any) {
-        getAwardListByCardAPI(data).then((res: any) => {
-            console.log("get award", res.data);
-            this.setState({
-                awardList: res.data
+        if (this.state.selectedSearchByValue === 'By Award') {
+            getAwardListByCardAPI(data).then((res: any) => {
+                console.log("get award", res.data);
+                this.setState({
+                    awardList: res.data,
+                    loading: false
+                })
             })
-        })
+        }
+        else {
+            getAwardListByRecipentAPI(data).then((res: any) => {
+                console.log("get award", res.data);
+                this.setState({
+                    awardList: res.data,
+                    loading: false
+                })
+            })
+
+        }
     }
 
     awardInput = (data: any) => {
-        this.state.BadgeList.filter((e: any) => e.cardName === data).map((e: any) => {
-            this.setState({
-                CardId: e.cardId
-            })
+        this.setState({
+            searchListInputValue:data
         })
-    }
-
-    employee = (data:any)=>{
-        this.state.AwardedEmployeeList.filter((e: any) => e.employeeEmail === data).map((e: any) => {
-            this.setState({
-                AwardedEmployeeEmail: e.employeeName
+        if (this.state.selectedSearchByValue === 'By Award') {
+            this.state.applauseCardList.filter((e: any) => e.cardName === data).map((e: any) => {
+                this.setState({
+                    applauseCardId: e.cardId
+                })
             })
-        })
-    }
-
-    selectSearch=(data:any)=>{
-console.log(data);
-
-    }
-
-    search() {
-        const data = {
-            "FromDate": "",
-            "ToDate": "",
-            "CardId": this.state.CardId,
-            //  "RecipentEmail":this.state.AwardedEmployeeEmail
         }
-        this.getAwardList(data)
+        else {
+            this.state.awardedEmployeeList.filter((e: any) => e.employeeEmail === data).map((e: any) => {
+                this.setState({
+                    awardedEmployeeEmail: e.employeeName,
+                    awardedEmployeeName: e.employeeEmail
+                })
+            })
+        }
+    }
+
+
+
+
+////////////// Search Function ////////////////////////
+    search() {
+        this.setState({
+            loading:true
+        },()=>{
+            if (this.state.selectedSearchByValue === 'By Award') {
+                const data = {
+                    "FromDate": "",
+                    "ToDate": "",
+                    "CardId": this.state.applauseCardId,
+                }
+                this.getAwardList(data)
+            }
+            else {
+                const data = {
+                    "FromDate": "",
+                    "ToDate": "",
+                    "RecipentEmail": this.state.awardedEmployeeName
+                }
+                this.getAwardList(data)
+            }
+        })
+        
     }
 
     render() {
 
         return (
-            <div style={{
-                margin: '0 auto',
-                padding: '20px',
-                backgroundColor: '#ffffff',
-            }}>
+            <div style={{ margin: '0 auto' }}>
 
-                {(this.state.byAwardListInput && this.state.AwardedEmployeeName) && <Flex className="pt-1 pb-2" vAlign="end" gap="gap.medium" styles={{justifyContent:"center"}}>
-                     <FormDropdown fluid
-                        items={["By award","By Employee"]}
+                {this.state.searchListInput && <Flex className="pt-1 pb-2" vAlign="end" gap="gap.medium">
+                    <FormDropdown fluid
+                        items={this.state.searchByList}
                         search={false}
-                        placeholder="Search By Employee"
-                        styles={{width:"30%"}}
-                        onChange={(event, { value }) => this.selectSearch(value)}
+                        placeholder={this.state.searchByList[0]}
+                        className="statisticsDropDown"
+                        onChange={(event, { value }) => this.selectSearchByValueFunction(value)}
                     />
-                     <FormDropdown fluid
-                        items={this.state.byAwardListInput}
-                        search={false}
-                        placeholder={this.state.byAwardListInput[0]}
+                    <FormDropdown fluid
+                        items={this.state.searchListInput}
+                        // search={true}
+                        value={this.state.searchListInputValue}
+                        className="statisticsDropDown"
                         onChange={(event, { value }) => this.awardInput(value)}
-                        styles={{width:"30%"}}
                     />
-                    <Button primary content="Search" icon={<SearchIcon />} onClick={() => this.search()} styles={{width:"25%"}} />
+                    <Button primary content="Search" onClick={() => this.search()} styles={{ width: "15%" }} />
                 </Flex >}
-                {this.state.awardList && (this.state.awardList.length>0) ? <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: 20 }}>
-                     {this.state.awardList.map((e:any)=>{
-                       return <Card className="card pointer active">
-                        <CardBody>
-                            <img className="batch-statistics" src={e.cardImage} />
-                            <Flex vAlign="center" className="pt-1">
-                                {/* <Avatar
+
+                {!this.state.loading ? <div>
+                    {this.state.awardList && (this.state.awardList.length > 0) ? <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: 20 }}>
+                        {this.state.awardList.map((e: any) => {
+                            return <Card fluid className="card pointer">
+                                <CardBody>
+                                    <img className="batch-statistics" src={e.cardImage} />
+                                    <Flex vAlign="center" className="pt-1">
+                                        {/* <Avatar
                                     image="https://fabricweb.azureedge.net/fabric-website/assets/images/avatar/RobertTolbert.jpg"
                                     label="Product Creative Director"
                                     name="Shirley Larkin"
                                 /> */}
-                                <Flex styles={{ padding: '5px' }}>
-                                    <Text content={e.recipentEmail} weight="bold" />
-                                </Flex>
-                                <FlexItem push>
-                                    <Header as="h1">{e.awardCount}</Header>
-                                </FlexItem>
-                            </Flex>
-                        </CardBody>
-                    </Card>
-                    }) }
+                                        <Flex column styles={{ padding: '5px' }}>
+                                            <Text content={e.recipentEmail} weight="bold" styles={{ color: "black" }} />
+                                            <Text content={e.recipentName} size="smallest" styles={{ color: "gray" }} />
+                                            <Text content={e.cardName} size="medium" styles={{ color: "#F17E21", marginTop: "4px" }} />
+                                        </Flex>
+                                        <FlexItem push>
+                                            <Header as="h1">{e.awardCount}</Header>
+                                        </FlexItem>
+                                    </Flex>
+                                </CardBody>
+                            </Card>
+                        })}
 
-                </div>:<div style={{justifyContent:"center"}}> No data available</div>}
-                {/* <Text>Award by Employee</Text>
-                <Flex gap="gap.large" className="pt-2 flex-wrap">
-                    <Card className="card pointer">
-                        <CardBody>
-                            <Image className="batch-statistics" src="http://primeuniversity.net/gold.svg" />
-                            <Flex vAlign="center" className="pt-1">
-                                <Header as="h3" className="color-gold">Gold</Header>
-                                <FlexItem push>
-                                    <Header as="h1">8</Header>
-                                </FlexItem>
-                            </Flex>
-                        </CardBody>
-                    </Card>
-                    <Card className="card pointer">
-                        <CardBody>
-                            <Image className="batch-statistics" src="http://primeuniversity.net/gold.svg" />
-                            <Flex vAlign="center" className="pt-1">
-                                <Header as="h3" className="color-gold">Gold</Header>
-                                <FlexItem push>
-                                    <Header as="h1">8</Header>
-                                </FlexItem>
-                            </Flex>
-                        </CardBody>
-                    </Card>
-                </Flex> */}
+                    </div> : <div className="noDataText"> No Data Available</div>}
 
-
+                </div> : <Loader styles={{ margin: "50px" }} />}
             </div>
         );
     }

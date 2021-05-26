@@ -6,8 +6,10 @@ import ChampList from '../components/champList'
 import Statistics from '../components/statistics'
 
 import "./../styles.scss"
+
 type MyState = {
 };
+
 class AwardPage extends React.Component<MyState> {
     state: MyState = {
        
@@ -25,14 +27,16 @@ class AwardPage extends React.Component<MyState> {
         return (
             <div style={{
                 margin: '0 auto',
-                padding: '20px',
-                backgroundColor: '#ffffff',
+                padding: '0px 10px',
             }}>
                 <Tabs>
-                    <TabList>
-                        <Tab>Champ List</Tab>
+                    <div className="reportTab">
+                    <TabList >
+                        <Tab>Rewards and Recognitions</Tab>
                         <Tab>Statistics</Tab>
                     </TabList>
+                    </div>
+
 
                     <TabPanel>
                         <ChampList />

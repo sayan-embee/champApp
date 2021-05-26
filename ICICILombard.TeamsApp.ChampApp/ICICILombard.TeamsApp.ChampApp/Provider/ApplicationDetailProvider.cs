@@ -465,7 +465,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Provider
             IList<AwardByRecipentList> returnList = new List<AwardByRecipentList>();
             try
             {
-                string sql = "Usp_AwardByAwardId_GetAll";
+                string sql = "Usp_AwardByEmployee_GetAll";
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
                     SqlCommand command = new SqlCommand(sql, connection);

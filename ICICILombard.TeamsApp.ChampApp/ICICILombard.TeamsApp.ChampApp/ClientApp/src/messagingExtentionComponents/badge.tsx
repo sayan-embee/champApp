@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flex, Text, Card, CardBody } from "@fluentui/react-northstar";
+import { Flex, Text, Card, CardBody, Loader } from "@fluentui/react-northstar";
 import * as microsoftTeams from "@microsoft/teams-js";
 // import { getBadgesAPI } from "../apis/getBadgesApi";
 import { getApplauseCardAPI } from "./../apis/ApplauseCardApi"
@@ -25,8 +25,10 @@ interface IState {
    personalChat?:any;
    UPN?: any;
    channelName?:any;
-   authToken?:any
-
+   loading?: any;
+    channelId?: any;
+    userObjectId?:any;
+    selectedBadgeId?:any
 }
 
 class Badges extends React.Component<IProps, IState> {
@@ -42,6 +44,7 @@ class Badges extends React.Component<IProps, IState> {
             //     { name: "Well Done", image: require("./../assets/welldone.png"), color:"#a8f38f"},
             //      { name: "Thank You", image: require("./../assets/thankyou.svg"), color:"#d08ef5" }
             // ],
+            loading:true
         };
 
     }
@@ -56,11 +59,13 @@ class Badges extends React.Component<IProps, IState> {
             this.setState({
                 "teamId": context.teamId && context.teamId,
                 "groupId": context.groupId && context.groupId,
+                "channelId": context.channelId && context.channelId,
                 "userId": context.userObjectId && context.userObjectId,
                 "UPN":context.userPrincipalName && context.userPrincipalName,
                 "chatId":context.chatId && context.chatId,
                 "personalChat" : context.chatId ? true: false,
-                "channelName":context.channelName && context.channelName
+                "channelName":context.channelName && context.channelName,
+                "userObjectId":context.userObjectId && context.userObjectId
             
             })
             console.log("context check log 1", context);
@@ -68,11 +73,12 @@ class Badges extends React.Component<IProps, IState> {
 
         const search = window.location.search;
         const params = new URLSearchParams(search);
+        console.log("context check log 1", params.get("badgeId"));
         this.setState({
             token: params.get("token"),
             theme: params.get("theme"),
             entityId: params.get("entityId"),
-            authToken:params.get("userAuthToken") && params.get("userAuthToken")
+            selectedBadgeId:params.get("badgeId")
         }, () => {
             this.getBadge()
         })
@@ -109,7 +115,8 @@ class Badges extends React.Component<IProps, IState> {
                 return b
             })
             this.setState({
-                Badge: badgeData
+                Badge: badgeData,
+                loading:false
             })
         })
 
@@ -123,27 +130,29 @@ class Badges extends React.Component<IProps, IState> {
         this.setState({
             badgeName: data.name,
         }, () => {
-            this.props.history.push({ pathname: "/details", state: { data: data, token: this.state.token, groupId: this.state.groupId, chatId:this.state.chatId, personalChat:this.state.personalChat, userId:this.state.userId, UPN:this.state.UPN, channelName:this.state.channelName, authToken:this.state.authToken } })
+            this.props.history.push({ pathname: "/details", state: { data: data, token: this.state.token, groupId: this.state.groupId, chatId:this.state.chatId,  userId:this.state.userId, UPN:this.state.UPN, channelName:this.state.channelName, teamId:this.state.teamId, channelId:this.state.channelId, userObjectId:this.state.userObjectId } })
         })
     }
 
 
     render() {
+        console.log("sayan",this.state.selectedBadgeId);
+        
 
         return (
             <div>
                 <Card fluid className="containerCard badegCardWidth">
-                    <CardBody>
+                {!this.state.loading?<CardBody styles={{marginTop:"20px"}}>
                         <Flex hAlign="center" vAlign="center" padding="padding.medium"><Text>Select an Applaud award</Text></Flex>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: 20 }}>
+                       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: 20 }} className="badgeImageCardGridDiv">
                             {this.state.Badge && this.state.Badge.map((e: any) => {
-                                return <Card onClick={() => this.check(e)} ghost centered className="badgeImageCard">
+                                return <div className={`badgeImageCard ${(this.state.selectedBadgeId === e.badgeId) && 'selectedBadge' } `}><Card onClick={() => this.check(e)} ghost centered className={`badgeImageCard ${(this.state.selectedBadgeId === e.badgeId) && 'selectedBadge' } `}>
                                     <img src={e.badgeImage} className="badgeImg" />
                                     <text>{e.badgeName}</text>
-                                </Card>
+                                </Card></div>
                             })}
                         </div>
-                    </CardBody>
+                    </CardBody>:<Loader styles={{ margin: "50px" }} />}
                 </Card>
             </div>
         );

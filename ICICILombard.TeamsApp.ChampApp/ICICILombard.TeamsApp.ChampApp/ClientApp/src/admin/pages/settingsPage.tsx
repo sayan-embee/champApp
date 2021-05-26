@@ -1,14 +1,13 @@
 import React from 'react';
-import { ArrowLeftIcon } from '@fluentui/react-icons-northstar';
 
-import { Header, Flex, Text, Button, Card, CardBody, FlexItem, RadioGroup } from "@fluentui/react-northstar";
+import { Header, Flex, Text, Button, Card, CardBody, FlexItem, RadioGroup, Loader } from "@fluentui/react-northstar";
 
 import Toggle from 'react-toggle'
 
 import "./../styles.scss"
 
 import { getAppSettingAPI, updateAppSettingAPI } from './../../apis/settingApi'
-
+const backImage = require("./../../assets/left-arrow.svg")
 
 interface IViswasProps {
   history?: any;
@@ -21,7 +20,8 @@ interface MyState {
   IsGroupMultiple?: any;
   IsChannelSingle?: any;
   IsChannelMultiple?: any;
-  getData?: any
+  getData?: any;
+  loading?: any
 };
 
 class Setting extends React.Component<IViswasProps, MyState> {
@@ -29,7 +29,7 @@ class Setting extends React.Component<IViswasProps, MyState> {
     super(props);
     this.state = {
     };
-}
+  }
   componentDidMount() {
     this.getAppSetting()
   }
@@ -71,26 +71,34 @@ class Setting extends React.Component<IViswasProps, MyState> {
   }
 
   updateSetting() {
-    const data = {
-      "IsGroupSingle": this.state.IsGroupSingle,
-      "IsGroupMultiple": this.state.IsGroupMultiple,
-      "IsChannelSingle": this.state.IsChannelSingle,
-      "IsChannelMultiple": this.state.IsChannelMultiple,
-      "IsBehaviourRequired": this.state.viswasBehaviourRequire
-    }
-    updateAppSettingAPI(data).then((res) => {
-      if (res.data.successFlag === 1) {
-        this.getAppSetting()
+    this.setState({
+      loading:true
+    },()=>{
+      const data = {
+        "IsGroupSingle": this.state.IsGroupSingle,
+        "IsGroupMultiple": this.state.IsGroupMultiple,
+        "IsChannelSingle": this.state.IsChannelSingle,
+        "IsChannelMultiple": this.state.IsChannelMultiple,
+        "IsBehaviourRequired": this.state.viswasBehaviourRequire
       }
-      console.log(" update setting", res);
-
+      updateAppSettingAPI(data).then((res) => {
+        if (res.data.successFlag === 1) {
+          this.setState({
+            loading:false
+          })
+          this.getAppSetting()
+        }
+        console.log(" update setting", res);
+  
+      })
+  
     })
-
+    
   }
 
-  back(){
+  back() {
     this.props.history.push(`/admin_preview`)
-}
+  }
   render() {
     console.log(this.state);
 
@@ -98,38 +106,43 @@ class Setting extends React.Component<IViswasProps, MyState> {
       <div>
 
         <div className="containterBox">
-        <div className="displayFlex">
-                    <Button onClick={() => this.back()} icon={<ArrowLeftIcon />} text />
-          <Header as="h2" content="Settings" style={{ margin: '0', fontWeight: 'lighter' }}></Header>
-</div>
+          <div className="displayFlex" style={{alignItems:"center"}}>
+            <div className="backButton pointer" onClick={() => this.back()}>
+            <img src={backImage.default}/>
+            </div>
+
+            <Header as="h3" content="Settings" className="headingText"></Header>
+          </div>
           <Card fluid styles={{
             borderRadius: '6px',
-            marginTop:"20px",
-            backgroundColor: '#f5f5f5',
+            marginTop: "20px",
+            boxShadow: 'rgb(0 0 0 / 10%) 0px 10px 13px',
+            backgroundColor: 'transparent',
             ':hover': {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: 'transparent',
+              boxShadow: 'rgb(0 0 0 / 10%) 0px 10px 13px',
             },
           }}>
             <CardBody>
               <Header as="h4" content="How colleague(s) can be applauded?" ></Header>
 
-              <div className="outerDivToggleRadioGroup">
+              {this.state.getData && <div className="outerDivToggleRadioGroup">
                 <div style={{ marginRight: "15px", display: "flex", flexDirection: "column" }} >
                   <Text content="Group" />
                   <Text content="Channel" styles={{ marginTop: "15px" }} />
                 </div>
-                {this.state.getData && <div>
+               <div>
 
-                  
-                    <RadioGroup
-                      defaultCheckedValue={(this.state.IsGroupMultiple === 1) ? "multi" : "single"}
-                      onCheckedValueChange={this.groupSetting}
-                      items={[
-                        { label: 'Single person', value: "single" },
-                        { label: 'Multi person', value: "multi" },
-                      ]}
-                    />
-                  
+
+                  <RadioGroup
+                    defaultCheckedValue={(this.state.IsGroupMultiple === 1) ? "multi" : "single"}
+                    onCheckedValueChange={this.groupSetting}
+                    items={[
+                      { label: 'Single person', value: "single" },
+                      { label: 'Multi person', value: "multi" },
+                    ]}
+                  />
+
                   <RadioGroup
                     defaultCheckedValue={(this.state.IsChannelSingle === 1) ? "single" : "multi"}
                     onCheckedValueChange={this.channelSetting}
@@ -138,19 +151,21 @@ class Setting extends React.Component<IViswasProps, MyState> {
                       { label: 'Multi person', value: "multi" },
                     ]}
                   />
-                </div>}
+                </div>
 
 
-              </div>
+              </div>}
 
               {this.state.getData && <div className="outerDivToggleRadioGroup">
-                <Header as="h4" content="Vishvas Behaviours Required?" styles={{ marginRight: "10px" }}></Header>
+                <Header as="h4" content="Values/Behaviors Required?" styles={{ marginRight: "10px" }}></Header>
                 <Toggle defaultChecked={(this.state.viswasBehaviourRequire === 1) ? true : false} icons={false} onChange={(e) => this.viswasBehaviourRequireFunction(e)} ></Toggle>
                 <Text styles={{ marginLeft: "10px" }}>{this.state.viswasBehaviourRequire ? "Yes" : "No"}</Text>
               </div>}
               <Flex gap="gap.small">
                 <FlexItem push>
-                  <Button primary content="Update" onClick={() => this.updateSetting()} />
+                  <Button disabled={this.state.loading?true:false}primary onClick={() => this.updateSetting()}>
+                    {!this.state.loading?<Text styles={{ padding: "10px" }}>Update</Text>:<Loader size="smallest"  styles={{ margin: "20px", color:"white" }} />}
+                  </Button>
                 </FlexItem>
               </Flex>
             </CardBody>

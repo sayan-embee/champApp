@@ -1,13 +1,27 @@
 import React from 'react';
-import { EditIcon, ArrowLeftIcon } from '@fluentui/react-icons-northstar';
-import { Header, Divider, Flex, Button, Card, CardBody, FormInput, Form, Dialog, Text } from "@fluentui/react-northstar";
 
+import { Header, Flex, Button, Text, Loader } from "@fluentui/react-northstar";
+import * as microsoftTeams from "@microsoft/teams-js";
 import "./../styles.scss"
 
-import { getViswasBehaviourAPI, addViswasBehaviourAPI } from './../../apis/ViswasBehaviourApi'
+import { getViswasBehaviourAPI } from './../../apis/ViswasBehaviourApi'
 
 import Toggle from 'react-toggle'
 
+
+const base_URL = window.location.origin
+const editImage = require("./../../assets/edit.svg")
+const backImage = require("./../../assets/left-arrow.svg")
+
+interface ITaskInfo {
+    title?: string;
+    height?: number;
+    width?: number;
+    url?: string;
+    card?: string;
+    fallbackUrl?: string;
+    completionBotId?: string;
+}
 
 interface IViswasProps {
     history?: any;
@@ -17,28 +31,19 @@ interface IViswasProps {
 
 interface MyState {
     ViswasBehaviourList?: any;
-    addNewInputName?: any;
-    editActiveStatusValue?: any;
-    editNameValue?: any;
-    editActiveStatus?: any
+    loading?: any;
+    url?: any
 }
 
 
-class Vishvas extends React.Component<IViswasProps,MyState> {
+class Vishvas extends React.Component<IViswasProps, MyState> {
     constructor(props: IViswasProps) {
         super(props);
         this.state = {
-            editActiveStatus:false
+            loading: true,
+            url: base_URL + '/addviswas'
         };
     }
-
-    // state: MyState = {
-    //     // ViswasBehaviourList: [
-    //     //     { behaviourId: 1, behaviourName: "Walking Together", isActive: 1 },
-    //     //     { behaviourId: 2, behaviourName: "Value 1", isActive: 0 }
-    //     // ]
-    //     editActiveStatus:false
-    // };
 
 
     componentDidMount() {
@@ -54,76 +59,56 @@ class Vishvas extends React.Component<IViswasProps,MyState> {
         getViswasBehaviourAPI(data).then((res) => {
             console.log("api visws get", res.data);
             this.setState({
-                ViswasBehaviourList: res.data
+                ViswasBehaviourList: res.data,
+                loading: false
             })
 
         })
     }
 
 
-    addViswasBehaviour(data:any){
-        addViswasBehaviourAPI(data).then((res)=>{
-            console.log("add viswas",res.data);
-            if(res.data.successFlag===1){
+
+    addNewTaskModule = () => {
+        let taskInfo: ITaskInfo = {
+            url: this.state.url,
+            title: "Create New Values/Behaviors ",
+            height: 350,
+            width: 600,
+            fallbackUrl: this.state.url,
+        }
+        console.log("task module", taskInfo);
+        let submitHandler = (err: any, result: any) => {
+            console.log("errr", err);
+            console.log("result", result);
+            this.getViswasBehaviour()
+        };
+
+        microsoftTeams.tasks.startTask(taskInfo, submitHandler);
+    }
+
+    editTaskModule = (data: any) => {
+        let taskInfo: ITaskInfo = {
+            url: `${base_URL}/editviswas?id=${data.behaviourId}`,
+            title: "Edit Values/Behaviors ",
+            height: 350,
+            width: 600,
+            fallbackUrl: this.state.url,
+        }
+        console.log("task module", taskInfo);
+        let submitHandler = (err: any, result: any) => {
+            this.setState({
+                loading:true
+            },()=>{
                 this.getViswasBehaviour()
-            }    
-        })
+            })
+        };
+
+        microsoftTeams.tasks.startTask(taskInfo, submitHandler);
     }
 
 
-    addNewInput(event: any) {
-        this.setState({
-            addNewInputName: event.target.value
-        })
-    }
 
-    addNew() {
-        if (this.state.addNewInputName) {
-            const data = {
-                "BehaviourId": 0,
-                "BehaviourName": this.state.addNewInputName,
-                "IsActive": 1
-            }
-            this.addViswasBehaviour(data)
-            // console.log(data)
-            // this.setState({
-            //     ViswasBehaviourList: [...this.state.ViswasBehaviourList, { BehaviourId: this.state.ViswasBehaviourList.length + 1, BehaviourName: this.state.addNewInputName, IsActive: true }]
-            // }, () => {
-            //     console.log('add new', this.state.ViswasBehaviourList);
-            // })
-        }
-        else {
-            alert("Name is required")
-        }
-    }
-
-    editActiveStatus = (e: any) => {
-        this.setState({
-            editActiveStatusValue: e.target.checked ? 1 : 0,
-            editActiveStatus:true
-        }, () => {
-            console.log(this.state.editActiveStatusValue);
-
-        })
-    }
-
-    editName(e: any) {
-        this.setState({
-            editNameValue: e.target.value
-        })
-    }
-
-    editFunction(data: any) {
-        const Value = {
-            "BehaviourId": data.behaviourId,
-            "BehaviourName": this.state.editNameValue ? this.state.editNameValue : data.behaviourName,
-            "IsActive": this.state.editActiveStatus ? this.state.editActiveStatusValue : data.isActive
-        }
-        this.addViswasBehaviour(Value)
-        console.log("check", Value)
-    }
-
-    back(){
+    back() {
         this.props.history.push(`/admin_preview`)
     }
 
@@ -132,132 +117,101 @@ class Vishvas extends React.Component<IViswasProps,MyState> {
         return (
             <div className="containterBox">
                 <div>
-                    <div className="displayFlex">
-                    <Button onClick={() => this.back()} icon={<ArrowLeftIcon />} text />
-                    <Header as="h2" content=" Vishvas Behaviours" style={{ margin: '0', fontWeight: 'lighter' }}></Header>
-                    </div>
-                
 
-                    <Dialog
-                        cancelButton="Cancel"
-                        confirmButton="+ Add"
-                        content={{
-                            children: (Component, props) => {
-                                const { styles, ...rest } = props
-                                return (
-                                    <div style={{ marginBottom: "30px" }}>
-                                        <div className="displayFlex">
-                                            <img src="https://image.freepik.com/free-vector/abstract-logo-flame-shape_1043-44.jpg" className="logoIcon" />
-                                            <div className="displayFlex logoText">
-                                                <Text size="large" weight="bold">Vishvas Behaviours</Text>
-                                                <Text size="medium">Create New</Text>
-                                            </div>
-                                        </div>
-                                        <Divider />
-                                        <Card fluid styles={{
-                                            display: 'block',
-                                            backgroundColor: 'white',
-                                            padding: '0',
-                                            ':hover': {
-                                                backgroundColor: 'white',
-                                            },
-                                        }}>
-                                            <CardBody>
+                    <div className="displayFlex " style={{ alignItems: "center" }}>
+                        <div className="backButton pointer" onClick={() => this.back()}>
+                        <img src={backImage.default}/>
+                        </div>
 
-                                                <Form styles={{
-                                                    paddingTop: '20px'
-                                                }}>
-                                                    <FormInput
-                                                        label="Name"
-                                                        name="Name"
-                                                        id="Name"
-                                                        required fluid
-                                                        onChange={(e) => this.addNewInput(e)}
-                                                        showSuccessIndicator={false}
-                                                    />
-                                                </Form>
-                                            </CardBody>
-
-                                        </Card>
-                                    </div>
-                                )
-                            },
-                        }}
-                        onConfirm={() => this.addNew()}
-                        trigger={<Button primary content="+Add New" className="addNewButton" />}
-                    />
-                </div>
-
-
-                {this.state.ViswasBehaviourList ? <table className="ViswasTable">
-                    <tr>
-                        <th>Name</th>
-                        <th>Active</th>
-                        <th style={{ textAlign: "end", paddingRight: '25px' }}>Action</th>
-                    </tr>
-                    {this.state.ViswasBehaviourList.map((e: any) => {
-                        return <tr className="ViswasTableRow">
-                            <td>{e.behaviourName}</td>
-                            <td>
-                                <Flex styles={{ alignItems: "center" }}>
-                                    <Toggle disabled={true} defaultChecked={e.isActive} icons={false} />
-                                    <Text styles={{ marginLeft: "5px" }}>{e.isActive ? "Yes" : "No"}</Text>
-                                </Flex>
-
-                            </td>
-                            <td style={{ textAlign: "end" }}>
-                                <div style={{marginRight:"10px"}}> <Dialog
-                                    cancelButton="Cancel"
-                                    confirmButton="+ Add"
-                                    content={{
-                                        children: (Component, props) => {
-                                            return (
-                                                <div style={{ marginBottom: "40px" }}>
-                                                    <div className="displayFlex">
-                                                        <img src="https://image.freepik.com/free-vector/abstract-logo-flame-shape_1043-44.jpg" className="logoIcon" />
-                                                        <div className="displayFlex logoText">
-                                                            <Text size="large" weight="bold">Vishvas Behaviours</Text>
-                                                            <Text size="medium">Edit </Text>
-                                                        </div>
-                                                    </div>
-                                                    <Divider />
-                                                    <div style={{ paddingTop: '20px' }}>
-                                                        <FormInput
-                                                            label="Name"
-                                                            name="Name"
-                                                            id="Name"
-                                                            defaultValue={e.behaviourName}
-                                                            required fluid
-                                                            onChange={(e) => this.editName(e)}
-                                                            showSuccessIndicator={false}
-                                                        />
-                                                        <div className="outerDivToggleRadioGroup">
-                                                            <Text styles={{ marginRight: "5px" }}> Active Status </Text>
-                                                            <Toggle defaultChecked={(e.isActive === 1) ? true : false} icons={false} onChange={(e) => this.editActiveStatus(e)} ></Toggle>
-                                                            {/* <RadioGroup
-                                                            defaultCheckedValue={e.active ? 1 : 2}
-                                                            onCheckedValueChange={this.editActiveStatus}
-                                                            items={[
-                                                                { label: 'True', value: 1 },
-                                                                { label: 'False', value: 2 },
-                                                            ]}
-                                                        /> */}
-                                                        </div>
-
+                        <Header as="h3" content=" Values/Behaviors" className="headingText"></Header>
+                        <div className="addNewDiv">
+                            <Button primary content="+Add New" className="addNewButton" onClick={() => this.addNewTaskModule()} />
+                            {/* <Dialog
+                                cancelButton="Cancel"
+                                confirmButton="+ Add"
+                                content={{
+                                    children: (Component, props) => {
+                                        const { styles, ...rest } = props
+                                        return (
+                                            <div style={{ paddingBottom: "60px" }}>
+                                                <div className="displayFlex">
+                                                    <img src="https://image.freepik.com/free-vector/abstract-logo-flame-shape_1043-44.jpg" className="logoIcon" />
+                                                    <div className="displayFlex logoText">
+                                                        <Text size="large" weight="bold">Vishvas Behaviours</Text>
+                                                        <Text size="medium">Create New</Text>
                                                     </div>
                                                 </div>
-                                            )
-                                        },
-                                    }}
-                                    onConfirm={() => this.editFunction(e)}
-                                    trigger={<Button icon={<EditIcon />} text iconOnly >Edit</Button>}
-                                /></div>
-                            </td>
+                                                <Divider />
+                                                <Card fluid styles={{
+                                                    display: 'block',
+                                                    backgroundColor: 'white',
+                                                    padding: '0',
+                                                    marginTop:"10px",
+                                                    ':hover': {
+                                                        backgroundColor: 'white',
+                                                    },
+                                                }}>
+                                                    <CardBody>
+
+                                                        <Form styles={{
+                                                            paddingTop: '20px'
+                                                        }}>
+                                                            <FormInput
+                                                                label="Name"
+                                                                name="Name"
+                                                                id="Name"
+                                                                required fluid
+                                                                onChange={(e) => this.addNewInput(e)}
+                                                                showSuccessIndicator={false}
+                                                            />
+                                                        </Form>
+                                                    </CardBody>
+
+                                                </Card>
+                                            </div>
+                                        )
+                                    },
+                                }}
+                                onConfirm={() => this.addNew()}
+                                trigger={<Button primary content="+Add New" className="addNewButton" />}
+                            /> */}
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+                {!this.state.loading ? <div>
+                    {this.state.ViswasBehaviourList ? <table className="ViswasTable">
+                        <tr>
+                            <th>Name</th>
+                            <th>Active</th>
+                            <th style={{ textAlign: "end", paddingRight: '45px' }}>Action</th>
                         </tr>
-                    })}
+                        {this.state.ViswasBehaviourList.map((e: any) => {
+                            return <tr className="ViswasTableRow">
+                                <td>{e.behaviourName}</td>
+                                <td>
+                                    <Flex styles={{ alignItems: "center" }}>
+                                        <Toggle disabled={true} defaultChecked={e.isActive ? true:false} icons={false} />
+                                        <Text styles={{ marginLeft: "5px" }}>{e.isActive ? "Yes" : "No"}</Text>
+                                    </Flex>
+
+                                </td>
+                                <td style={{ textAlign: "end" }}>
+                                    <div className="tableEditDiv">
+                                        <div style={{ marginRight: "10px" }}> Edit </div>
+                                        <div className="editButton pointer" onClick={() => this.editTaskModule(e)}  ><img src={editImage.default} /></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        })}
 
 
-                </table> : <div style={{marginTop:"25px"}}>No data Available</div>}
+                    </table> : <div className="noDataText"> No Data Available</div>}
+
+                </div> : <Loader styles={{ margin: "50px" }} />}
 
             </div>
         );

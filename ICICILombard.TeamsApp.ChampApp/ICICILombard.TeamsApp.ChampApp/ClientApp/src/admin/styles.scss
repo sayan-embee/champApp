@@ -10,8 +10,14 @@
 }
 
 
+.headingText{
+  margin: 0;
+  font-weight: lighter;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .containterBox{
-  max-width: 1000px;
+  // max-width: 1000px;
   margin: 0 auto;
   padding-top: 20px;
   padding:10px
@@ -22,13 +28,22 @@
   display: flex;
 }
   
+.backButton {
+  margin-top: 6px;
+margin-right: 10px;
+}
+
+.addNewDiv{
+  flex: 1;
+}
+
 .tableTile{
   color: grey;
     font-size: 14px;
 }
 
   .ViswasTable {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
     border-collapse: collapse;
     width: 100% !important;
     margin-top: 40px !important;
@@ -36,46 +51,78 @@
   
 
   .ViswasTable td {
-    border-bottom: 1px solid #ddd;
-    padding: 8px;
+    border-bottom: 4px solid #f5f5f5;
+    padding: 7px 12px;
+    margin-bottom: 7px;
+    color: black !important;
   }
 
 
   .ViswasTable th{
-    padding: 8px;
+    padding: 3px 12px;
   }
  
 
   .ViswasTableRow:hover {
-    background-color: #ddd;
+    background-color: #8b8cc7;
+    // background-color: #303469;
+    color: white !important;
+  }
+
+  .ViswasTableRow{
+    background-color: white;
+    
   }
   
 
   .ViswasTable th {
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
+  .tableEditDiv{
+      display: flex;
+      justify-content: flex-end;
+      margin-right: 23px;
+  }
+  
   .addNewButton{
     float: right;
     border-radius: 6px !important;
   }
 
   .badgePageIcon{
-    height: 37px;
-    width: 37px;
+    height: 28px;
+    width: 28px;
   }
 
   .badgePageEditIcon{
-    height: 50px;
-    width: 50px;
-    margin-top: 10px;
+    height: 80px;
+    width: 80px;
+    margin-left: 10px;
+    border-radius: 10px !important;
+    margin-top: 5px !important;
   }
 
   .cameraBtn{
-    width: 150px;
     margin-top: 5px !important;
     font-size: 14px;
+    height:80px !important;
+      width:80px !important;
+      border: 1px dashed #250268 !important;
+      float: left;
+      border-radius: 10px !important;
+      margin-right: 5px;
+      color: #ff922b !important;
+      align-content: center !important;
+      justify-content: center !important;
+      display: flex !important;
+      align-items: center !important;
+  }
+
+  .cameraBtn svg{
+    height: 37px;
+    width: 37px;
   }
   
   .outerDivToggleRadioGroup{
@@ -84,6 +131,9 @@
     margin-top: 15px;
   }
 
+  .editOuterDivToggleRadioGroup{
+    margin-top: 25px;
+  }
 
     .react-toggle {
       touch-action: pan-x;
@@ -93,7 +143,6 @@
       background-color: transparent;
       border: 0;
       padding: 0;
-    
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       -khtml-user-select: none;
@@ -101,7 +150,7 @@
       -ms-user-select: none;
       user-select: none;
     
-      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      -webkit-tap-highlight-color: rgba(114, 111, 111, 0);
       -webkit-tap-highlight-color: transparent;
     }
     
@@ -117,39 +166,39 @@
     }
     
     .react-toggle--disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
+      // cursor: not-allowed;
+      // opacity: 0.5;
       -webkit-transition: opacity 0.25s;
       transition: opacity 0.25s;
     }
     
     .react-toggle-track {
-      width: 35px;
-      height: 17px;
+      width: 30px;
+      height: 14px;
       padding: 0;
       border-radius: 30px;
-      background-color: #4D4D4D;
+      background-color: #C8C6C6;
       -webkit-transition: all 0.2s ease;
       -moz-transition: all 0.2s ease;
       transition: all 0.2s ease;
     }
     
     .react-toggle:hover:not(.react-toggle--disabled) .react-toggle-track {
-      background-color: #4D4D4D;
+      background-color: #b6b3b3;
     }
     
     .react-toggle--checked .react-toggle-track {
-      background-color: #0099E0;
+      background-color: rgb(98, 100, 167);
     }
     
     .react-toggle--checked:hover:not(.react-toggle--disabled) .react-toggle-track {
-      background-color: #0099E0;
+      background-color: rgb(98, 100, 167);
     }
     
     .react-toggle-track-check {
       position: absolute;
-      width: 14px;
-      height: 10px;
+      width: 10px;
+      height: 8px;
       top: 0px;
       bottom: 0px;
       margin-top: auto;
@@ -171,14 +220,14 @@
     
     .react-toggle-track-x {
       position: absolute;
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       top: 0px;
       bottom: 0px;
       margin-top: auto;
       margin-bottom: auto;
       line-height: 0;
-      right: 10px;
+      right: 8px;
       opacity: 1;
       -webkit-transition: opacity 0.25s ease;
       -moz-transition: opacity 0.25s ease;
@@ -194,8 +243,8 @@
       position: absolute;
       top: 1px;
       left: 1px;
-      width: 15px;
-      height: 15px;
+      width: 12px;
+      height: 12px;
       border: 1px solid #4D4D4D;
       border-radius: 50%;
       background-color: #FAFAFA;
@@ -210,27 +259,31 @@
     }
     
     .react-toggle--checked .react-toggle-thumb {
-      left: 18px;
-      border-color: #0099E0;
+      left: 16px;
+      border-color: rgb(98, 100, 167);
     }
     
     .react-toggle--focus .react-toggle-thumb {
-      -webkit-box-shadow: 0px 0px 3px 2px #0099E0;
-      -moz-box-shadow: 0px 0px 3px 2px #0099E0;
-      box-shadow: 0px 0px 2px 3px #0099E0;
+      -webkit-box-shadow: 0px 0px 3px 2px rgb(98, 100, 167);
+      -moz-box-shadow: 0px 0px 3px 2px rgb(98, 100, 167);
+      box-shadow: 0px 0px 2px 3px rgb(98, 100, 167);
     }
     
     .react-toggle:active:not(.react-toggle--disabled) .react-toggle-thumb {
-      -webkit-box-shadow: 0px 0px 5px 5px #0099E0;
-      -moz-box-shadow: 0px 0px 5px 5px #0099E0;
-      box-shadow: 0px 0px 5px 5px #0099E0;
+      -webkit-box-shadow: 0px 0px 5px 5px rgb(98, 100, 167);
+      -moz-box-shadow: 0px 0px 5px 5px rgb(98, 100, 167);
+      box-shadow: 0px 0px 5px 5px rgb(98, 100, 167);
     }
-
+////////////////////////////////////////////////////////////////////////////
+.editButton span{height: 15px;
+    width: 15px;
+    margin-bottom: 5px;
+}
 
     /////////////////////////////////////////////// 
     .react-tabs__tab--selected{
       background: transparent !important;
-      color: black;
+       color: rgb(110, 103, 103) !important;
       border-radius: 0;
       border: none !important;
       border-bottom: 3px solid #6264A7 !important;
@@ -246,13 +299,19 @@
     .card{
       margin-bottom: 1.5rem !important;
       background-color: #ffffff !important;
-      box-shadow: rgb(187, 182, 182) 0px 10px 13px !important;
+      box-shadow: #cecee1 0px 3px 12px !important;
       transition: all .5s;
+      max-height: 135px;
     }
     .card:hover{
       border: 1px solid #F17E21 !important;
       transform: translate(0px, -5px);
     }
+    .card h1{
+      color:black;
+    }
+
+
     .card:hover h1{
       color: #F17E21 !important;
     }
@@ -319,33 +378,44 @@
       color: #fff;
     }
     //////////////////////////////////
-    .statisticsSerchDiv{
+    .statisticsDropDown{
+      width: 30%;
+      box-shadow: rgba(0, 0, 0, 0.15)1px 1px 1px 1px;
+    }
+
+    .statisticsDropDown li{
+      cursor: pointer;
+  }
+    
+.champListFindContact{
+  width: 175px !important;
+  box-shadow: rgba(157, 150, 150, 0.15) 0px 2px 0px 0px ;
+}
+
+.champListFindContact input{
+  width: 100%;
+}
+
+    .taskmoduleButtonDiv{
+      bottom: 0;
+      position: absolute;
+      right: 0;
+      margin:5%
+    }
+
+
+
+    .reportListImageDiv{
       display: flex;
-      align-items: flex-end;
+      align-items: center;
     }
 
-    .statisticsSerchDivButton{
-    //   right: 0;
-    // position: absolute;
-    // margin-right: 30px;
-    justify-content: space-between;
-    display: flex;
-    margin-top: 20px;
-    align-items: flex-end;
-
+    .reportListImageDiv img{
+      margin-right: 10px;
     }
-
-    .statisticsSerchDivInput{
-      display: flex;
-
-      input .ui-box{
-        width: 250px !important;
-      }
-    }
-
     .noDataText{
       font-family: cursive;
-      margin-top: 70px;
+      margin-top: 30px;
       display: flex;
       justify-content: center;
       font-size: 18px;

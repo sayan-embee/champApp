@@ -25,7 +25,7 @@
   "accentColor": "#D85028",
   "configurableTabs": [
     {
-      "configurationUrl": "https://c44d4bbe8f7d.ngrok.io/admin_initial",
+      "configurationUrl": "https://c1e0c0b7a905.ngrok.io/admin_initial",
       "canUpdateConfiguration": true,
       "scopes": [ "team", "groupchat" ]
     }
