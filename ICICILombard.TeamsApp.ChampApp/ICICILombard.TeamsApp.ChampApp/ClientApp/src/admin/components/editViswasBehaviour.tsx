@@ -37,7 +37,6 @@ class EditViswas extends React.Component<IViswasEditProps, MyState> {
 
     componentDidMount() {
         const params = new URLSearchParams(this.props.location.search);
-        console.log("edit viswas params", params.get('id'));
         this.setState({
             behaviourId: params.get('id'),
         },()=>{
@@ -50,7 +49,6 @@ class EditViswas extends React.Component<IViswasEditProps, MyState> {
             "BehaviourId": this.state.behaviourId
         }
         getViswasBehaviourAPI(data).then((res) => {
-            console.log("api visws get", res.data);
             this.setState({
                 viswasBehaviourList: res.data,
                 loading: false
@@ -85,7 +83,7 @@ class EditViswas extends React.Component<IViswasEditProps, MyState> {
 
     addViswasBehaviour(data: any) {
         addViswasBehaviourAPI(data).then((res) => {
-            console.log("add viswas", res.data);
+            // console.log("add viswas", res.data);
             if (res.data.successFlag === 1) {
                 microsoftTeams.tasks.submitTask()
             }
@@ -99,7 +97,6 @@ class EditViswas extends React.Component<IViswasEditProps, MyState> {
             "IsActive": this.state.editActiveStatus ? this.state.editActiveStatusValue : data.isActive
         }
         this.addViswasBehaviour(Value)
-        console.log("check", Value)
     }
 
 

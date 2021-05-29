@@ -46,7 +46,7 @@ class AddViswas extends React.Component<IViswasAddProps, MyState> {
 
     addViswasBehaviour(data: any) {
         addViswasBehaviourAPI(data).then((res) => {
-            console.log("add viswas", res.data);
+            // console.log("add viswas", res.data);
             if (res.data.successFlag === 1) {
                 microsoftTeams.tasks.submitTask()
             }

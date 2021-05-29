@@ -28,7 +28,7 @@ namespace ICICILombard.TeamsApp.ChampApp
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Microsoft.Bot.Connector;
-
+    using ICICILombard.TeamsApp.ChampApp.Provider;
     /// <summary>
     /// Implements the core logic of the Badges bot.
     /// </summary>
@@ -62,23 +62,23 @@ namespace ICICILombard.TeamsApp.ChampApp
         /// <summary>
         /// Task module height.
         /// </summary>
-        private readonly int taskModuleHeight = 500;
+        private readonly int taskModuleHeight = 520;
 
         /// <summary>
         /// Task module width.
         /// </summary>
-        private readonly int taskModuleWidth = 600;
+        private readonly int taskModuleWidth = 700;
 
         /// <summary>
         /// Task module height.
         /// </summary>
-        private readonly string noTeamTaskModuleHeight = "small";
+        //private readonly string noTeamTaskModuleHeight = "small";
 
         /// <summary>
         /// Task module width.
         /// </summary>
-        private readonly string noTeamTaskModuleWidth = "small";
-
+        //private readonly string noTeamTaskModuleWidth = "small";
+               
         /// <summary>
         /// Sends logs to the Application Insights service.
         /// </summary>
@@ -94,13 +94,13 @@ namespace ICICILombard.TeamsApp.ChampApp
         /// </summary>
         private readonly BotSettings configurationSettings;
 
-
+        
         /// <summary>
         /// Open badges bot adapter.
         /// </summary>
         private readonly BotFrameworkAdapter botAdapter;
 
-
+       
         /// <summary>
         /// Microsoft app credentials.
         /// </summary>
@@ -108,6 +108,10 @@ namespace ICICILombard.TeamsApp.ChampApp
 
         private readonly IGraphServiceClientHelper graphServiceClientHelper;
 
+        private readonly IApplicationDetailProvider applicationDetailProvider;
+
+        private readonly IGraphServiceClientProvider graphServiceClientProvider;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeBot"/> class.
         /// </summary>
@@ -127,7 +131,9 @@ namespace ICICILombard.TeamsApp.ChampApp
             ILogger<ChampBot> logger,
             BotFrameworkAdapter botAdapter,
             MicrosoftAppCredentials microsoftAppCredentials,
-            IGraphServiceClientHelper graphServiceClientHelper
+            IGraphServiceClientHelper graphServiceClientHelper,
+            IApplicationDetailProvider applicationDetailProvider,
+            IGraphServiceClientProvider graphServiceClientProvider
             )
         {
             this.configurationSettings = optionsAccessor.CurrentValue;
@@ -137,12 +143,14 @@ namespace ICICILombard.TeamsApp.ChampApp
             this.tenantId = this.configurationSettings.TenantId;
             this.microsoftAppCredentials = microsoftAppCredentials;
 
-
+            
             this.logger = logger;
             this.tokenHelper = tokenHelper;
 
             this.botAdapter = botAdapter;
             this.graphServiceClientHelper = graphServiceClientHelper;
+            this.applicationDetailProvider = applicationDetailProvider;
+            this.graphServiceClientProvider = graphServiceClientProvider;
         }
 
         /// <summary>
@@ -187,8 +195,9 @@ namespace ICICILombard.TeamsApp.ChampApp
             if (membersAdded.Where(member => member.Id == activity.Recipient.Id).FirstOrDefault() != null)
             {
                 this.logger.LogInformation($"Bot added {activity.Conversation.Id}");
-                var welcomeCardImageUrl = new Uri(new Uri(this.appBaseUrl), "/images/welcome.png");
+                //var welcomeCardImageUrl = new Uri(new Uri(this.appBaseUrl), "/images/welcome.png");
                 //await turnContext.SendActivityAsync(MessageFactory.Attachment(WelcomeCard.GetWelcomeCardAttachment(welcomeCardImageUrl)), cancellationToken);
+                await Task.Delay(1);
                 return;
             }
         }
@@ -208,14 +217,12 @@ namespace ICICILombard.TeamsApp.ChampApp
 
             // we are handling two cases within try/catch block 
             //if the bot is installed it will create adaptive card attachment and show card with input fields
-            string memberName;
+            //string memberName;
             try
             {
                 // Check if your app is installed by fetching member information.
-                var member = await TeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
-                var memberList = await TeamsInfo.GetMembersAsync(turnContext, cancellationToken);
-                memberName = member.Name;
-
+                var memberList = await TeamsInfo.GetMembersAsync(turnContext,cancellationToken);
+                
                 return await OnFetchTaskAsync(turnContext, action, cancellationToken);
             }
             catch (ErrorResponseException ex)
@@ -231,7 +238,7 @@ namespace ICICILombard.TeamsApp.ChampApp
                                 Card = GetAdaptiveCardAttachmentFromFile("justintimeinstallation.json"),
                                 Height = 200,
                                 Width = 400,
-                                Title = "Adaptive Card - App Installation",
+                                Title = "App Installation",
                             },
                         },
                     };
@@ -240,7 +247,7 @@ namespace ICICILombard.TeamsApp.ChampApp
 
             }
 
-
+            
         }
 
         protected async Task<MessagingExtensionActionResponse> OnFetchTaskAsync(
@@ -275,9 +282,9 @@ namespace ICICILombard.TeamsApp.ChampApp
         /// Returns adaptive card attachment which allows Just In Time installation of app. 
         private static Attachment GetAdaptiveCardAttachmentFromFile(string fileName)
         {
-            string filePath = System.IO.Directory.GetCurrentDirectory() + @"\Cards\JSONCards\" + fileName + "";
+            string filePath =System.IO.Directory.GetCurrentDirectory() + @"\Cards\JSONCards\"+ fileName + "";
             var adaptiveCardJson = System.IO.File.ReadAllText(filePath);
-
+            
             var adaptiveCardAttachment = new Attachment()
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
@@ -300,20 +307,18 @@ namespace ICICILombard.TeamsApp.ChampApp
         {
             try
             {
-                ViewMsTeam objViewMsTeam = null;
                 try
                 {
-                    objViewMsTeam = JsonConvert.DeserializeObject<ViewMsTeam>(((JObject)action.Data).GetValue("msteams")?.ToString());
-                    if (objViewMsTeam.justInTimeInstall == true)
+                    if (action.Data.ToString().Contains("justInTimeInstall"))
                     {
                         return await OnFetchTaskAsync(turnContext, action, cancellationToken);
                     }
+                   
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
-
+                    ex.ToString();
                 }
-                var activityState = ((JObject)turnContext.Activity.Value).GetValue("msteams")?.ToString();
                 switch (action.CommandId)
                 {
                     // These commandIds are defined in the Teams App Manifest.
@@ -325,106 +330,112 @@ namespace ICICILombard.TeamsApp.ChampApp
                         var awardRecipients = badgeDetails.awardRecipients.ToList();
                         string awardedByName = badgeDetails.awardedByName;
 
+                        var awardDetails = badgeDetails.award;
+
+                        //Check if award is inserted or not
+
                         var memberlist = await TeamsInfo.GetMembersAsync(turnContext, cancellationToken);
-                        foreach (var teamMember in memberlist)
+                        List<TeamsAwardRecipent> awardedrecipentdetails = new List<TeamsAwardRecipent>();
+                        foreach (var award_recipent in awardRecipients)
                         {
-                            if (teamMember.Email.ToLower() == awardRecipients[0].email.ToLower())
+                            var teamMember = memberlist.Where(x => x.UserPrincipalName.ToLower() == award_recipent.email.ToLower()).FirstOrDefault();
+                            if (teamMember != null)
                             {
-                                badgeDetails.awardrecipentUserId = teamMember.Id;
-                                badgeDetails.UPN = teamMember.Name;
-                                break;
+                                TeamsAwardRecipent _t = new TeamsAwardRecipent();
+                                _t.UserId = teamMember.Id;
+                                _t.UPN = teamMember.Name;
+                                awardedrecipentdetails.Add(_t);
+                                //break;
                             }
                         }
 
-                        List<TeamsAwardRecipent> awardedrecipentdetails = new List<TeamsAwardRecipent>();
-                        var memberlist1 = await TeamsInfo.GetMembersAsync(turnContext, cancellationToken);
-                        foreach (var teamMember in memberlist1)
+                        //Adding at mentioned to Sender
+                        var teamMemberAwardedBy = memberlist.Where(x => x.UserPrincipalName.ToLower() == badgeDetails.awardedByEmail.ToLower()).FirstOrDefault();
+                        if (teamMemberAwardedBy != null)
                         {
-                            if (teamMember.Email != null)
-                            {
-
-
-                                foreach (var award_recipent in awardRecipients)
-                                {
-                                    if (teamMember.Email.ToLower() == award_recipent.email.ToLower())
-                                    {
-                                        //badgeDetails.awardrecipentUserId = teamMember.Id;
-                                        //badgeDetails.UPN = teamMember.Name;
-                                        TeamsAwardRecipent _t = new TeamsAwardRecipent();
-                                        _t.UserId = teamMember.Id;
-                                        _t.UPN = teamMember.Name; ;
-                                        awardedrecipentdetails.Add(_t);
-                                        break;
-                                    }
-                                }
-                            }
+                            TeamsAwardRecipent _t = new TeamsAwardRecipent();
+                            _t.UserId = teamMemberAwardedBy.Id;
+                            _t.UPN = teamMemberAwardedBy.Name; ;
+                            awardedrecipentdetails.Add(_t);
+                            //break;
                         }
 
                         Uri url = new Uri(turnContext.Activity.ServiceUrl);
                         var client = new ConnectorClient(url, this.microsoftAppCredentials.MicrosoftAppId, this.microsoftAppCredentials.MicrosoftAppPassword);
 
 
-                        /*var mentionText = new StringBuilder();
-                        var entities = new List<Entity>();
-                        var mentions = new List<Mention>();
-
-                        foreach (var member in awardRecipients)
-                        {
-                            var mention = new Mention
-                            {
-                                Mentioned = new ChannelAccount()
-                                {
-                                    Id = member.userId,
-                                    Name = member.name,
-                                },
-                                Text = $"<at>{XmlConvert.EncodeName(member.name)}</at>",
-                                //Text = $"<at>{XmlConvert.EncodeName("Workflow Approver")}</at>",
-                            };
-                            mentions.Add(mention);
-                            entities.Add(mention);
-                            mentionText.Append(mention.Text).Append(", ");
-                        }
-
-                        var awardedBymention = new Mention
-                        {
-                            Mentioned = new ChannelAccount()
-                            {
-                                Id = turnContext.Activity.From.Id,
-                                Name = awardedByName
-
-                            },
-                            Text = $"<at>{XmlConvert.EncodeName(awardedByName)}</at>",
-                        };
-                        entities.Add(awardedBymention);
-                        string strtext = string.Format(Strings.MentionText, mentionText.ToString(), awardedBymention.Text);
-                        //var notificationActivity = MessageFactory.Text(string.Format(Strings.MentionText, mentionText.ToString(), awardedBymention.Text));
-                        var notificationActivity = MessageFactory.Text(strtext);
-                        notificationActivity.Entities = entities;*/
                         /*************Send AdaptiveCard*************/
-                        //UserProfile _receipentuser = new UserProfile();
-                        //_receipentuser = await this.graphServiceClientHelper.GetUserProfileAsync(awardRecipients[0].email);
-                        //UserProfile _senderuser = new UserProfile();
-                        //_senderuser = await this.graphServiceClientHelper.GetUserProfileAsync(badgeDetails.awardedByEmail);
-                        //var awardCardAttachment = AwardCard.GetBadgeAttachment(badgeDetails, _receipentuser, _senderuser, this.appBaseUrl);
-                        //var message = Activity.CreateMessageActivity();
-                        //message.Attachments.Add(awardCardAttachment);
-                        //await turnContext.SendActivityAsync((Activity)message, cancellationToken);
-                        /************************************/
 
                         List<UserProfile> _receipentuser = new List<UserProfile>();
+
+                        var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
                         foreach (var mem in awardRecipients)
                         {
-                            var _userprofile = await this.graphServiceClientHelper.GetUserProfileAsync(mem.email);
+                            var _userprofile = await this.graphServiceClientHelper.GetUserProfileAsync(graphClient, mem.email);
+                            _userprofile.PhotoUrl = (_userprofile.PhotoUrl == null || _userprofile.PhotoUrl == "") ? this.appBaseUrl + "/images/userImage.png" : _userprofile.PhotoUrl;
+
+                            //Get User Manager
+                            Microsoft.Graph.User lineManger = await this.graphServiceClientHelper.GetUserManagerAsync(graphClient, mem.email);
+                            if (lineManger != null)
+                            {
+                                _userprofile.ReporitngManagerUPN = lineManger.UserPrincipalName;
+                                _userprofile.ReportingManagerEmail = lineManger.Mail;
+                                _userprofile.ReportingManagerName = lineManger.DisplayName;
+                            }
                             _receipentuser.Add(_userprofile);
                         }
-                        UserProfile _senderuser = new UserProfile();
-                        _senderuser = await this.graphServiceClientHelper.GetUserProfileAsync(badgeDetails.awardedByEmail);
-                        var awardCardAttachment = AwardCard.GetBadgeAttachment1(badgeDetails, _receipentuser, _senderuser, awardedrecipentdetails, this.appBaseUrl);
-                        var message = Activity.CreateMessageActivity();
-                        message.Attachments.Add(awardCardAttachment);
-                        await turnContext.SendActivityAsync((Activity)message, cancellationToken);
 
-                        //await turnContext.SendActivityAsync(notificationActivity, cancellationToken);
+                        //For Receipent Reporting Manager
+                        for(var i=0;i< awardDetails.Recipents.Count; i++)
+                        {
+                           var recUser= _receipentuser.Where(x => x.UserPrincipalName.ToLower() == awardDetails.Recipents[i].RecipentEmail.ToLower() || x.Mail.ToLower() == awardDetails.Recipents[i].RecipentEmail.ToLower()).FirstOrDefault();
+                            if (recUser != null)
+                            {
+                                awardDetails.Recipents[i].RecipentEmail = recUser.Mail;
+                                awardDetails.Recipents[i].RecipentUPN = recUser.UserPrincipalName;
+                                awardDetails.Recipents[i].Department = recUser.Department;
+                                awardDetails.Recipents[i].Designation = recUser.JobTitle;
+
+                                awardDetails.Recipents[i].ReporitngManagerUPN = recUser.ReporitngManagerUPN;
+                                awardDetails.Recipents[i].ReportingManagerEmail = recUser.ReportingManagerEmail;
+                                awardDetails.Recipents[i].ReportingManagerName = recUser.ReportingManagerName;
+                            }
+                        }
+
+                        UserProfile _senderuser = new UserProfile();
+                        _senderuser = await this.graphServiceClientHelper.GetUserProfileAsync(graphClient, badgeDetails.awardedByEmail);
+                        awardDetails.Department = _senderuser.Department;
+                        awardDetails.Designation = _senderuser.JobTitle;
+                        awardDetails.AwardedByUPN = _senderuser.UserPrincipalName;
+                        //Get User Manager
+                        Microsoft.Graph.User lineMangerSender = await this.graphServiceClientHelper.GetUserManagerAsync(graphClient, badgeDetails.awardedByEmail);
+                        if (lineMangerSender != null)
+                        {
+                            _senderuser.ReporitngManagerUPN = lineMangerSender.UserPrincipalName;
+                            _senderuser.ReportingManagerEmail = lineMangerSender.Mail;
+                            _senderuser.ReportingManagerName = lineMangerSender.DisplayName;
+
+                            awardDetails.ReporitngManagerUPN = lineMangerSender.UserPrincipalName;
+                            awardDetails.ReportingManagerEmail = lineMangerSender.Mail;
+                            awardDetails.ReportingManagerName = lineMangerSender.DisplayName;
+                        }
+                        _senderuser.PhotoUrl = (_senderuser.PhotoUrl == null || _senderuser.PhotoUrl == "") ? this.appBaseUrl + "/images/userImage.png" : _senderuser.PhotoUrl;
+
+
+                        //Save Information to Database
+                        
+                        var response = await this.applicationDetailProvider.InsertAward(awardDetails).ConfigureAwait(false);
+                        if (response.SuccessFlag == 1)
+                        {
+                            var message = Activity.CreateMessageActivity();
+                            var awardCardAttachment = AwardCard.GetBadgeAttachment(badgeDetails, _receipentuser, _senderuser, awardedrecipentdetails, this.appBaseUrl);
+                            message.Attachments.Add(awardCardAttachment);
+
+                            await turnContext.SendActivityAsync((Activity)message, cancellationToken);
+                        }
+
+                        /************************************/
+
                         return default;
 
 
@@ -432,267 +443,16 @@ namespace ICICILombard.TeamsApp.ChampApp
                         return await Task.FromResult(new MessagingExtensionActionResponse());
                 }
 
-
+                
             }
             catch (Exception ex)
             {
+                ExceptionLogging.SendErrorToText(ex);
                 return null;
             }
 
         }
-
-        private MessagingExtensionActionResponse CreateCardCommand(ITurnContext<IInvokeActivity> turnContext, MessagingExtensionAction action)
-        {
-            // The user has chosen to create a card by choosing the 'Create Card' context menu command.  
-            //var createCardData = ((JObject)action.Data).ToObject<CreateCardData>();
-
-            var card = new HeroCard
-            {
-                Title = "Title",
-                Subtitle = "Subtitle",
-                Text = "Hi",
-            };
-
-            var attachments = new List<MessagingExtensionAttachment>();
-            attachments.Add(new MessagingExtensionAttachment
-            {
-                Content = card,
-                ContentType = HeroCard.ContentType,
-                Preview = card.ToAttachment(),
-            });
-
-            return new MessagingExtensionActionResponse
-            {
-                ComposeExtension = new MessagingExtensionResult
-                {
-                    AttachmentLayout = "list",
-                    Type = "result",
-                    Attachments = attachments,
-                },
-            };
-        }
-        //protected override async Task<MessagingExtensionActionResponse> OnTeamsMessagingExtensionSubmitActionAsync(
-        //    ITurnContext<IInvokeActivity> turnContext,
-        //    MessagingExtensionAction action,
-        //    CancellationToken cancellationToken)
-        //{
-        //    try
-        //    {
-        //        List<string> AwardedToEmails = new List<string>();
-        //        var JSONString = action.Data.ToString();//.Substring(0, (action.Data.ToString().Length) - 1);
-        //        var activity = turnContext.Activity as Activity;
-        //        var badgeDetails = JsonConvert.DeserializeObject<BadgeList>(JSONString);
-        //        string str = "";
-        //        var awardRecipients = badgeDetails.awardRecipients.ToList();
-        //        var awardedBy = badgeDetails.awardedBy;
-
-        //        //string userid = turnContext.Activity.From.Id;
-        //        //var member = await TeamsInfo.GetMembersAsync(turnContext, cancellationToken);
-        //        //string AccountName = "", AccountEmail = "", AccountId = "";
-        //        //foreach (var teamMember in member)
-        //        //{
-        //        //  AccountEmail = teamMember.Email;
-        //        //    AccountName = teamMember.Name;
-        //        //    AccountId = teamMember.Id;
-        //        //    if (AccountId == userid)
-        //        //    {
-        //        //        break;
-        //        //    }
-        //        //}
-        //        // Get team members in Team.
-        //        /// var teamsDetails = turnContext.Activity.TeamsGetTeamInfo();
-        //        //var channelMembers = await TeamsInfo.GetTeamMembersAsync(turnContext, teamsDetails.Id, cancellationToken);
-        //        //var channelMembers = await TeamsInfo.GetMemberAsync(turnContext,badgeDetails.awardedBy,cancellationToken);
-
-        //        //for (var recipientCount = 0; recipientCount < badgeDetails.AwardRecipients.Count; recipientCount++)
-        //        //{
-        //        //var memberemail = badgeDetails.awardRecipients[recipientCount];
-        //        //AwardedToEmails.Add(memberemail.email);
-        //        // badgeDetails.AwardRecipients[recipientCount].name = channelMembers.where(member => member.email.tostring() == memberemail.email.tostring()).select(member => member.name).firstordefault();
-        //        //}
-
-        //        //badgeDetails.awardedBy = channelMembers.where(member => member.id == badgeDetails.awardedBy).select(member => member.email).firstordefault();
-
-        //        AwardedToEmails.Add("approver@esplspd.onmicrosoft.com");
-
-
-        //        //string awardedByEmail = badgeDetails.awardedBy;
-        //        string AwardedByEmail = "initiator@esplspd.onmicrosoft.com";
-        //        var channelData = activity.GetChannelData<TeamsChannelData>();
-
-        //        var conversationParameters = new ConversationParameters
-        //        {
-        //            Activity = (Activity)MessageFactory.Attachment(AwardCard.GetBadgeAttachment(badgeDetails)),
-        //            //Bot = activity.Recipient,
-        //            IsGroup = true,
-        //            ChannelData = channelData,
-        //            TenantId = channelData.Tenant.Id,
-        //        };
-        //        ///////////////////////////////////////////////////////////
-        //        var message = Activity.CreateMessageActivity();
-        //        message.Text = "Hello World";
-
-        //        // Get activity for mentioning members who are awarded with badge.
-        //        //var mentionActivity = await this.GetMentionActivityAsync(AwardedToEmails, AwardedByEmail, turnContext, cancellationToken);
-        //        await this.botAdapter.CreateConversationAsync(
-        //            "msteams",
-        //            turnContext.Activity.ServiceUrl,
-        //            this.microsoftAppCredentials,
-        //            conversationParameters,
-        //            async (newTurnContext, newCancellationToken) =>
-        //            {
-        //                await this.botAdapter.ContinueConversationAsync(
-        //                    this.microsoftAppCredentials.MicrosoftAppId,
-        //                    newTurnContext.Activity.GetConversationReference(),
-        //                    async (conversationTurnContext, conversationCancellationToken) =>
-        //                    {
-        //                       // mentionActivity.ApplyConversationReference(conversationTurnContext.Activity.GetConversationReference());
-        //                        await conversationTurnContext.SendActivityAsync(message, conversationCancellationToken);
-        //                    },
-        //                    newCancellationToken);
-        //            },
-        //            cancellationToken).ConfigureAwait(false);
-        //        //var channelData1 = turnContext.Activity.GetChannelData<TeamsChannelData>();
-        //        //var message = Activity.CreateMessageActivity();
-        //        //message.Text = "Hello World";
-        //        //var conversationParameters1 = new ConversationParameters
-        //        //{
-        //        //    IsGroup = true,
-        //        //    ChannelData = new TeamsChannelData
-        //        //    {
-        //        //        Channel = new ChannelInfo(channelData1.Channel.Id),
-        //        //    },
-        //        //    Activity = (Activity)message
-        //        //};
-        //        //MicrosoftAppCredentials.TrustServiceUrl(activity.ServiceUrl); 
-        //        //var connectorClient = new ConnectorClient(new Uri(activity.ServiceUrl)); 
-        //        //var response = await connectorClient.Conversations.CreateConversationAsync(conversationParameters1); 
-
-        //        return default;
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        private async Task<MessagingExtensionActionResponse> ValidateUserEmailId(ITurnContext<IInvokeActivity> turnContext, TokenResponse userBadgrToken)
-        {
-            var activity = turnContext.Activity;
-
-            //Check the conversation type in which the messaging extension is opened e.g. (channel,personal,groupChat)
-
-
-
-            // Get team members in Team.
-            var teamsDetails = activity.TeamsGetTeamInfo();
-            if (teamsDetails?.Id == null)
-            {
-                this.logger.LogError("Team ID is empty for user " + activity.From.AadObjectId);
-                return new MessagingExtensionActionResponse
-                {
-                    Task = new TaskModuleContinueResponse
-                    {
-                        Value = new TaskModuleTaskInfo()
-                        {
-                            Card = TeamNotFoundCard.GetAttachment(),
-                            Height = this.noTeamTaskModuleHeight,
-                            Width = this.noTeamTaskModuleWidth,
-                        },
-                    },
-                };
-            }
-
-            IEnumerable<TeamsChannelAccount> channelMembers = new List<TeamsChannelAccount>();
-
-            try
-            {
-                channelMembers = await TeamsInfo.GetTeamMembersAsync(turnContext, teamsDetails.Id);
-            }
-            catch (ErrorResponseException ex)
-            {
-                // If bot is not part of team roster, 'Forbidden' status code is returned while fetching team members
-                if (ex.Response?.StatusCode == HttpStatusCode.Forbidden)
-                {
-                    this.logger.LogError("Bot is not part of team roaster", ex);
-                    return new MessagingExtensionActionResponse
-                    {
-                        Task = new TaskModuleContinueResponse
-                        {
-                            Value = new TaskModuleTaskInfo()
-                            {
-                                Card = TeamNotFoundCard.GetAttachment(),
-                                Height = this.noTeamTaskModuleHeight,
-                                Width = this.noTeamTaskModuleWidth,
-                            },
-                        },
-                    };
-                }
-            }
-
-            // Get user email ID.
-            var userTeamsEmailId = channelMembers.First(member => member.AadObjectId == activity.From.AadObjectId).Email;
-            return null;
-        }
-
-        /// <summary>
-        /// Methods mentions user in respective channel of which they are part after grouping.
-        /// </summary>
-        /// <param name="awardedToEmails">List of email ID to whom badge is awarded.</param>
-        /// <param name="awardedByEmail">Email ID of member who awarded badge.</param>
-        /// <param name="turnContext">Provides context for a turn of a bot.</param>
-        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>A task that sends notification in newly created channel and mention its members.</returns>
-        private async Task<Activity> GetMentionActivityAsync(List<string> awardedToEmails, string awardedByEmail, ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var mentionText = new StringBuilder();
-                var entities = new List<Entity>();
-                var mentions = new List<Mention>();
-                var teamsDetails = turnContext.Activity.TeamsGetTeamInfo();
-                var channelMembers = await TeamsInfo.GetTeamMembersAsync(turnContext, teamsDetails.Id, cancellationToken);
-
-                var awardedToMemberDetails = channelMembers.Where(member => awardedToEmails.Contains(member.Email)).Select(member => new ChannelAccount { Id = member.Id, Name = member.Name });
-                var awardedByMemberDetails = channelMembers.Where(member => member.Email == awardedByEmail).Select(member => new ChannelAccount { Id = member.Id, Name = member.Name }).FirstOrDefault();
-
-                foreach (var member in awardedToMemberDetails)
-                {
-                    var mention = new Mention
-                    {
-                        Mentioned = new ChannelAccount()
-                        {
-                            Id = member.Id,
-                            Name = member.Name,
-                        },
-                        Text = $"<at>{XmlConvert.EncodeName(member.Name)}</at>",
-                    };
-                    mentions.Add(mention);
-                    entities.Add(mention);
-                    mentionText.Append(mention.Text).Append(", ");
-                }
-
-                var awardedBymention = new Mention
-                {
-                    Mentioned = new ChannelAccount()
-                    {
-                        Id = awardedByMemberDetails.Id,
-                        Name = awardedByMemberDetails.Name,
-                    },
-                    Text = $"<at>{XmlConvert.EncodeName(awardedByMemberDetails.Name)}</at>",
-                };
-                entities.Add(awardedBymention);
-
-                var notificationActivity = MessageFactory.Text(string.Format(Strings.MentionText, mentionText.ToString(), awardedBymention.Text));
-                notificationActivity.Entities = entities;
-                return notificationActivity;
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, $"Error while mentioning channel member in respective channels.");
-                return null;
-            }
-        }
+     
 
         /// <summary>
         /// Verify if the tenant id in the message is the same tenant id used when application was configured.
@@ -772,7 +532,7 @@ namespace ICICILombard.TeamsApp.ChampApp
 
             var entitiyId = "praise";// await this.badgrIssuerHelper.GetIssuerEntityId();
             var activity = turnContext.Activity;
-
+            
             if (activity.ChannelId == null)
             {
                 return new MessagingExtensionActionResponse

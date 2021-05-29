@@ -7,7 +7,8 @@ import Toggle from 'react-toggle'
 import "./../styles.scss"
 
 import { getAppSettingAPI, updateAppSettingAPI } from './../../apis/settingApi'
-const backImage = require("./../../assets/left-arrow.svg")
+
+const backImage = window.location.origin+"/images/left-arrow.svg"
 
 interface IViswasProps {
   history?: any;
@@ -37,7 +38,7 @@ class Setting extends React.Component<IViswasProps, MyState> {
 
   getAppSetting() {
     getAppSettingAPI().then((res) => {
-      console.log("get app setting", res.data);
+      // console.log("get app setting", res.data);
       this.setState({
         IsGroupSingle: res.data.isGroupSingle,
         IsGroupMultiple: res.data.isGroupMultiple,
@@ -88,8 +89,6 @@ class Setting extends React.Component<IViswasProps, MyState> {
           })
           this.getAppSetting()
         }
-        console.log(" update setting", res);
-  
       })
   
     })
@@ -100,7 +99,6 @@ class Setting extends React.Component<IViswasProps, MyState> {
     this.props.history.push(`/admin_preview`)
   }
   render() {
-    console.log(this.state);
 
     return (
       <div>
@@ -108,7 +106,7 @@ class Setting extends React.Component<IViswasProps, MyState> {
         <div className="containterBox">
           <div className="displayFlex" style={{alignItems:"center"}}>
             <div className="backButton pointer" onClick={() => this.back()}>
-            <img src={backImage.default}/>
+            <img src={backImage}/>
             </div>
 
             <Header as="h3" content="Settings" className="headingText"></Header>
@@ -158,7 +156,7 @@ class Setting extends React.Component<IViswasProps, MyState> {
 
               {this.state.getData && <div className="outerDivToggleRadioGroup">
                 <Header as="h4" content="Values/Behaviors Required?" styles={{ marginRight: "10px" }}></Header>
-                <Toggle defaultChecked={(this.state.viswasBehaviourRequire === 1) ? true : false} icons={false} onChange={(e) => this.viswasBehaviourRequireFunction(e)} ></Toggle>
+                <Toggle checked={(this.state.viswasBehaviourRequire === 1) ? true : false} icons={false} onChange={(e) => this.viswasBehaviourRequireFunction(e)} ></Toggle>
                 <Text styles={{ marginLeft: "10px" }}>{this.state.viswasBehaviourRequire ? "Yes" : "No"}</Text>
               </div>}
               <Flex gap="gap.small">

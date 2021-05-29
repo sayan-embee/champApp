@@ -87,7 +87,7 @@ namespace ICICILombard.TeamsApp.ChampApp
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseStaticFiles();
-            //app.UseSpaStaticFiles();
+            app.UseSpaStaticFiles();
             app.UseMvc();
             app.UseSpa(spa =>
             {

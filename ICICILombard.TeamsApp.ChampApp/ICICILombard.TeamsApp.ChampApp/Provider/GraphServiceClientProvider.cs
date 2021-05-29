@@ -54,6 +54,20 @@ namespace ICICILombard.TeamsApp.ChampApp.Provider
 
             return graphServiceClient;
         }
+        public async Task<GraphServiceClient> GetGraphClientApplication(string accessToken)
+        {
+            var graphServiceClient = new GraphServiceClient(
+                new DelegateAuthenticationProvider((requestMessage) =>
+                {
+                    requestMessage
+                .Headers
+                .Authorization = new AuthenticationHeaderValue("bearer", accessToken);
+
+                    return Task.CompletedTask;
+                }));
+
+            return await Task.FromResult(graphServiceClient);
+        }
         public async Task<string> GetApplicationAccessToken()
         {
             var credentials = new Microsoft.IdentityModel.Clients.ActiveDirectory.ClientCredential(clientId, secret);

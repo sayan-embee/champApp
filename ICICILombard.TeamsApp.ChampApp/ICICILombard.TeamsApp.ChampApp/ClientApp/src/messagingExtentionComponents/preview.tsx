@@ -1,12 +1,14 @@
 import React from 'react';
-import { Flex, Text, Card, CardBody, Button } from "@fluentui/react-northstar";
-import { ArrowLeftIcon } from '@fluentui/react-icons-northstar';
+import { Flex, Text, Card, CardBody, Button, Avatar, Loader } from "@fluentui/react-northstar";
+
 import "./../styles.scss"
 import * as microsoftTeams from "@microsoft/teams-js";
 
 import { sendAwardAPI } from '../apis/sendAwardApi'
 
-const backImage = require("./../assets/left-arrow.svg")
+const baseUrl = window.location.origin
+const backImage = baseUrl + "/images/left-arrow.svg"
+
 
 interface IPreviewProps {
     history?: any;
@@ -21,15 +23,18 @@ interface IPreviewState {
     userId?: any;
     UPN?: any;
     awardedByName?: any;
+    awardedByImage?:any;
     channelName?: any;
     userObjectId?: any;
     groupId?: any;
     teamId?: any;
+    teamName?:any;
     channelId?: any;
     chatId?: any;
-    IsGroup?: any;
-    IsTeam?: any,
-    IsChat?: any,
+    isGroup?: any;
+    isTeam?: any;
+    isChat?: any;
+    loading?:any;
 }
 
 class Preview extends React.Component<IPreviewProps, IPreviewState> {
@@ -53,61 +58,64 @@ class Preview extends React.Component<IPreviewProps, IPreviewState> {
                 groupId: this.props.location.state.groupId && this.props.location.state.groupId,
                 chatId: this.props.location.state.chatId && this.props.location.state.chatId,
                 teamId: this.props.location.state.teamId && this.props.location.state.teamId,
+                teamName: this.props.location.state.teamName && this.props.location.state.teamName,
                 channelId: this.props.location.state.channelId && this.props.location.state.channelId,
                 userObjectId: this.props.location.state.userObjectId && this.props.location.state.userObjectId,
                 token: this.props.location.state.token && this.props.location.state.token,
                 userId: this.props.location.state.userId && this.props.location.state.userId,
                 UPN: this.props.location.state.UPN && this.props.location.state.UPN,
                 awardedByName: this.props.location.state.awardedByName && this.props.location.state.awardedByName,
+                awardedByImage: this.props.location.state.awardedByImage && this.props.location.state.awardedByImage,
                 channelName: this.props.location.state.channelName && this.props.location.state.channelName,
-                IsGroup: this.props.location.state.IsGroup && this.props.location.state.IsGroup,
-                IsTeam: this.props.location.state.IsTeam && this.props.location.state.IsTeam,
-                IsChat: this.props.location.state.IsChat && this.props.location.state.IsChat,
+                isGroup: this.props.location.state.isGroup && this.props.location.state.isGroup,
+                isTeam: this.props.location.state.isTeam && this.props.location.state.isTeam,
+                isChat: this.props.location.state.isChat && this.props.location.state.isChat,
 
             })
-            console.log(this.props.location.state);
-
         }
     }
 
     send() {
+        this.setState({
+            loading:true
+        })
         const data = {
             "AwardedByEmail": this.state.UPN,
             "AwardedByName": this.state.awardedByName,
             "CardId": this.state.allData.badgeId,
             "CardName": this.state.allData.badgeName,
-            "IsGroup": this.state.IsGroup,
-            "IsTeam": this.state.IsTeam,
-            "IsChat": this.state.IsChat,
+            "IsGroup": this.state.isGroup,
+            "IsTeam": this.state.isTeam,
+            "IsChat": this.state.isChat,
             "GroupId": this.state.groupId ? this.state.groupId : "",
             "ChatId": this.state.chatId ? this.state.chatId : "",
-            "TeamId": this.state.teamId ? this.state.teamId : "",
+            "TeamId":this.state.teamId ? this.state.teamId : "",
             "ChannelId": this.state.channelId ? this.state.channelId : "",
             "UserObjectId": this.state.userObjectId,
-            "ChannelName": this.state.channelName,
+            "ChannelName": this.state.channelName?this.state.channelName:"",
             "BehaviourId": this.state.allData.behavioursId ? this.state.allData.behavioursId : 0,
             "BehaviourName": this.state.allData.behaviours ? this.state.allData.behaviours : "",
             "Notes": this.state.allData.reason,
-            "Recipents": this.state.allData.Recipents
+            "Recipents": this.state.allData.Recipents,
+            "TeamName": this.state.teamName ? this.state.teamName : ""
         }
-        console.log(data);
-
-        sendAwardAPI(data).then((res) => {
+        // console.log(data);
+        this.submitTask(data);
+        /*sendAwardAPI(data).then((res) => {
             console.log("send award response", res);
             if (res.data.successFlag === 1) {
                 this.submitTask()
             }
-        })
+        })*/
     }
 
 
-    submitTask() {
+    submitTask(data:any) {
 
         this.setState({
-            Details: { "awardRecipients": this.state.allData.name, "badge": this.state.selectedBadgeDetails, "behaviour": this.state.allData.behaviours ? this.state.allData.behaviours : "", "reason": this.state.allData.reason, "awardedByUserId": this.state.userId, "awardedByName": this.state.awardedByName, "awardedByEmail": this.state.UPN }
+            Details: { award:data,"awardRecipients": this.state.allData.name, "badge": this.state.selectedBadgeDetails, "behaviour": this.state.allData.behaviours ? this.state.allData.behaviours : "", "reason": this.state.allData.reason, "awardedByUserId": this.state.userId, "awardedByName": this.state.awardedByName, "awardedByEmail": this.state.UPN }
         }, () => {
             console.log("send button", this.state.Details);
-
             microsoftTeams.tasks.submitTask(this.state.Details)
         })
     }
@@ -123,7 +131,8 @@ class Preview extends React.Component<IPreviewProps, IPreviewState> {
                 channelId: this.state.channelId,
                 userObjectId: this.state.userObjectId,
                 userId: this.state.userId,
-                UPN: this.state.UPN
+                UPN: this.state.UPN,
+                teamName:this.state.teamName
             }
         })
     }
@@ -156,26 +165,18 @@ class Preview extends React.Component<IPreviewProps, IPreviewState> {
                                 borderColor: '#F17E21',
                             },
                         }}>
-                            <Flex styles={{ justifyContent: "center", alignItems: "center" }}>
-                                {/* <Avatar
-                                    image="https://fabricweb.azureedge.net/fabric-website/assets/images/avatar/RobertTolbert.jpg"
-                                />
-                                <Flex styles={{
-                                    padding: '5px',
-                                }}>
-                                    <Text content="Himanshu Damania" weight="bold" />
-                                </Flex> */}
+                            <Flex styles={{ justifyContent: "center", alignItems: "center", marginBottom: "7px"}}>
+                                {(this.state.awardedByImage !== "")?<Avatar styles={{marginRight: '8px' }} image={this.state.awardedByImage}/>:<Avatar styles={{marginRight: '8px' }} image={baseUrl+"/images/userImage.png"}/>}
+                                {this.state.awardedByName && <Flex styles={{padding: '5px' }}><Text weight="bold"> {this.state.awardedByName}</Text></Flex>}
                             </Flex>
-                            {this.state.awardedByName && <Flex hAlign="center" vAlign="center" styles={{ marginBottom: "7px" }}><Text weight="bold">{this.state.awardedByName}</Text></Flex>}
-                            <Flex hAlign="center" vAlign="center"><Text>Sent applause to</Text></Flex>
-                            <Flex styles={{
-                                justifyContent: "center",
-                                alignItems: "center",
-                                marginTop: '7px'
-                            }}>
-                                <Flex styles={{ marginBottom: "7px" }}>
+                            <Flex hAlign="center" vAlign="center"><Text styles={{color:"grey", marginLeft:"30px"}}>Sent applause to</Text></Flex>
+                            <Flex styles={{justifyContent: "center",alignItems: "center",marginTop: '7px'}}>
+                                <Flex column styles={{ marginBottom: "7px" }}>
                                     {this.state.allData.name && this.state.allData.name.map((e: any) => {
-                                        return <Text content={e.name} weight="bold" styles={{ marginRight: "10px" }} />
+                                        return <Flex styles={{ justifyContent:"flex-start", alignItems: "center", marginTop:"5px"}}>
+                                        {(e.photo !== "")?<Avatar styles={{marginRight: '8px' }} image={e.photo}/>:<Avatar styles={{marginRight: '8px' }} image={baseUrl+"/images/userImage.png"}/>}
+                                        <Flex styles={{padding: '5px' }}><Text weight="bold"> {e.name}</Text></Flex>
+                                    </Flex>
                                     })}
                                 </Flex>
                             </Flex>
@@ -212,11 +213,11 @@ class Preview extends React.Component<IPreviewProps, IPreviewState> {
                 <div className="margin20">
                     <Flex space="between">
                         <div className="backButton pointer backButtonMessagingExtention" onClick={() => this.back()}>
-                            <img src={backImage.default} /> <Text size="medium" >Back</Text>
+                            <img src={backImage} /> <Text size="medium" >Back</Text>
                         </div>
                         <Flex gap="gap.small">
                             <Button content="Cancel" onClick={() => microsoftTeams.tasks.submitTask()} />
-                            <Button primary onClick={() => this.send()}>Send</Button>
+                            <Button primary onClick={() => this.send()}>{!this.state.loading?<Text styles={{ padding: "10px" }}>Send</Text>:<Loader size="smallest"  styles={{ margin: "10px", color:"white" }} />}</Button>
                         </Flex>
                     </Flex>
                 </div>

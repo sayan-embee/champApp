@@ -12,6 +12,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
     using System.IO;
     using AdaptiveCards.Templating;
     using Newtonsoft.Json;
+    using System.Text;
     using System;
 
     /// <summary>
@@ -140,159 +141,19 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
             return adaptiveCardAttachment;
         }
 
-        public static Attachment GetBadgeAttachment(BadgeList _badgeList, UserProfile recipent, UserProfile sender, string baseurl)
+        public static Attachment GetBadgeAttachment1(BadgeList _badgeList, UserProfile recipent, UserProfile sender,string baseurl,string mentionText)
         {
 
             string filePath = Directory.GetCurrentDirectory() + @"\Cards\JSONCards\TestCard.json";
-            _badgeList.awardRecipients[0].photoUrl = recipent.PhotoUrl;
-            _badgeList.awardedByPhotoUrl = sender.PhotoUrl;
+            //_badgeList.mentionText = mentionText;
+            _badgeList.awardRecipients[0].photoUrl = (recipent.PhotoUrl==null || recipent.PhotoUrl=="")? baseurl+ "/images/userImage.png" : recipent.PhotoUrl ;
+            _badgeList.awardedByPhotoUrl = (sender.PhotoUrl == null || sender.PhotoUrl == "") ? baseurl + "/images/userImage.png" : sender.PhotoUrl; 
             //_badgeList.UPN = recipent.UserPrincipalName;
-
+            
             //_badgeList.badge[0].badgeImage = "https://5222dce4dcd1.ngrok.io/images/gold.png"; //_badgeList.badge[0].badgeImage;
             var adaptiveCardJsons = File.ReadAllText(Path.Combine(filePath));
             AdaptiveCardTemplate template = new AdaptiveCardTemplate(adaptiveCardJsons);
-            //string cardJsons = template.Expand(_badgeList);
-            string cardJsons= "{" +
- " \"$schema\": \"http://adaptivecards.io/schemas/adaptive-card.json\"," +
-  "\"type\": \"AdaptiveCard\"," +
-  "\"version\": \"1.2\"," +
-  "\"body\": [" +
-    "{" +
-      "\"type\": \"ColumnSet\"," +
-     " \"columns\": [" +
-        "{" +
-          "\"type\": \"Column\"," +
-          "\"items\": [" +
-            "{" +
-              "\"type\": \"Image\"," +
-              "\"style\": \"Person\"," +
-              "\"url\": \""+sender.PhotoUrl+"\"," +
-              "\"size\": \"Small\"," +
-              "\"horizontalAlignment\": \"Right\"" +
-            "}" +
-          "]," +
-          "\"width\": 40" +
-        "}," +
-        "{" +
-          "\"type\": \"Column\"," +
-          "\"items\": [" +
-            "{" +
-              "\"type\": \"TextBlock\"," +
-              "\"weight\": \"Bolder\"," +
-              "\"text\": \""+_badgeList.awardedByName+"\"," +
-              "\"wrap\": true" +
-            "}" +
-          "]," +
-          "\"width\": 60," +
-          "\"verticalContentAlignment\": \"Center\"" +
-        "}" +
-      "]," +
-      "\"horizontalAlignment\": \"Center\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"size\": \"Medium\"," +
-      "\"weight\": \"Lighter\"," +
-      "\"text\": \"Sent applause to\"," +
-      "\"wrap\": true," +
-      "\"horizontalAlignment\": \"Center\"" +
-    "}," +
-    "{" +
-      "\"type\": \"ColumnSet\"," +
-      "\"columns\": [" +
-        "{" +
-          "\"type\": \"Column\"," +
-          "\"items\": [" +
-            "{" +
-              "\"type\": \"Image\"," +
-              "\"style\": \"Person\"," +
-              "\"url\": \""+ recipent.PhotoUrl + "\"," +
-              "\"size\": \"Small\"," +
-              "\"horizontalAlignment\": \"Right\"" +
-            "}" +
-          "]," +
-          "\"width\": 40" +
-        "}," +
-        "{" +
-          "\"type\": \"Column\"," +
-          "\"items\": [" +
-            "{" +
-              "\"type\": \"TextBlock\"," +
-              "\"weight\": \"Bolder\"," +
-              "\"text\": \""+_badgeList.awardRecipients[0].name+"\"," +
-              "\"wrap\": true" +
-            "}" +
-          "]," +
-          "\"width\": 60," +
-          "\"verticalContentAlignment\": \"Center\"" +
-        "}" +
-      "]," +
-      "\"horizontalAlignment\": \"Center\"" +
-    "}," +
-    "{" +
-      "\"type\": \"Image\"," +
-      "\"url\": \""+_badgeList.badge[0].badgeImage+"\"," +
-      "\"horizontalAlignment\": \"Center\"," +
-      "\"spacing\": \"Large\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"text\": \"Vishvas  Behaviours\"," +
-      "\"wrap\": true," +
-      "\"horizontalAlignment\": \"Center\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"text\": \""+_badgeList.behaviour+"\"," +
-      "\"wrap\": true," +
-      "\"horizontalAlignment\": \"Center\"," +
-      "\"spacing\": \"None\"," +
-      "\"color\": \"Accent\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"text\": \"Reason for applause\"," +
-      "\"wrap\": true," +
-      "\"horizontalAlignment\": \"Center\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\","+
-      "\"text\": \""+_badgeList.reason+"\","+
-      "\"wrap\": true,"+
-      "\"horizontalAlignment\": \"Center\"," +
-      "\"spacing\": \"None\"," +
-      "\"color\": \"Accent\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"text\": \"<at>"+_badgeList.UPN+"</at>\"" +
-    "}," +
-    "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"text\": \"<at>" + _badgeList.UPN + "</at>\"" +
-    "}" +
-  "]," +
-  "\"msteams\": {" +
-    "\"entities\": [" +
-      "{" +
-        "\"type\": \"mention\"," +
-        "\"text\": \"<at>"+_badgeList.UPN+"</at>\"," +
-        "\"mentioned\": {" +
-          "\"id\": \""+_badgeList.awardrecipentUserId+"\"," +
-          "\"name\": \""+_badgeList.UPN+"\"" +
-        "}" +
-      "}," +
-       "{" +
-        "\"type\": \"mention\"," +
-        "\"text\": \"<at>" + _badgeList.UPN + "</at>\"," +
-        "\"mentioned\": {" +
-          "\"id\": \"" + _badgeList.awardrecipentUserId + "\"," +
-          "\"name\": \"" + _badgeList.UPN + "\"" +
-        "}" +
-      "}" +
-    "]" +
-  "}" +
-"}";
+            string cardJsons = template.Expand(_badgeList);
             var adaptiveCardAttachments = new Attachment()
             {
                 ContentType = "application/vnd.microsoft.card.adaptive",
@@ -300,8 +161,10 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
             };
             return adaptiveCardAttachments;
         }
-        public static Attachment GetBadgeAttachment1(BadgeList _badgeList, List<UserProfile> recipent, UserProfile sender, List<TeamsAwardRecipent> awardedrecipentdetails, string baseurl)
+
+        public static Attachment GetBadgeAttachment(BadgeList _badgeList, List<UserProfile> recipent, UserProfile sender, List<TeamsAwardRecipent> awardedrecipentdetails, string baseurl)
         {
+
             try
             {
 
@@ -335,7 +198,17 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
               "\"weight\": \"Bolder\"," +
               "\"text\": \"" + _badgeList.awardedByName + "\"," +
               "\"wrap\": true" +
-            "}" +
+            "}," +
+            "{" +
+                              "\"type\": \"TextBlock\"," +
+                              "\"weight\": \"Lighter\"," +
+                              "\"text\": \"" + _badgeList.awardedByEmail + "\"," +
+                              "\"fontType\": \"Default\"," +
+                              "\"isSubtle\": true," +
+                              "\"spacing\": \"none\"," +
+                              "\"wrap\": true," +
+                              "\"size\": \"Small\"" +
+                            "}" +
           "]," +
           "\"width\": 60," +
           "\"verticalContentAlignment\": \"Center\"" +
@@ -344,15 +217,41 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
       "\"horizontalAlignment\": \"Center\"" +
     "}," +
     "{" +
-      "\"type\": \"TextBlock\"," +
-      "\"size\": \"Medium\"," +
-      "\"weight\": \"Lighter\"," +
-      "\"text\": \"Sent applause to\"," +
-      "\"wrap\": true," +
-      "\"horizontalAlignment\": \"Center\"" +
+      "\"type\": \"ColumnSet\"," +
+     " \"columns\": [" +
+        "{" +
+          "\"type\": \"Column\"," +
+          "\"items\": [" +
+            "{" +
+              "\"type\": \"TextBlock\"," +
+              "\"weight\": \"Bolder\"," +
+              "\"text\": \"\"," +
+              "\"wrap\": true" +
+            "}" +
+          "]," +
+          "\"width\": 40" +
+        "}," +
+        "{" +
+          "\"type\": \"Column\"," +
+          "\"items\": [" +
+            "{" +
+              "\"type\": \"TextBlock\"," +
+              "\"weight\": \"Lighter\"," +
+              "\"text\": \"Sent applause to\"," +
+              "\"wrap\": true" +
+            "}" +
+            
+          "]," +
+          "\"width\": 60," +
+          "\"verticalContentAlignment\": \"Center\"" +
+        "}" +
+      "]," +
+      "\"horizontalAlignment\": \"Center\"" +   
       "},";
-                
-                foreach (var rep in recipent) {
+
+                //Award Recipent
+                foreach (var rep in recipent)
+                {
 
                     cardJsons += "{" +
                       "\"type\": \"ColumnSet\"," +
@@ -378,27 +277,61 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
                               "\"weight\": \"Bolder\"," +
                               "\"text\": \"" + rep.DisplayName + "\"," +
                               "\"wrap\": true" +
+                            "}," +
+                            "{" +
+                              "\"type\": \"TextBlock\"," +
+                              "\"weight\": \"Lighter\"," +
+                              "\"text\": \"" + rep.Mail + "\"," +
+                              "\"fontType\": \"Default\"," +
+                              "\"isSubtle\": true," +
+                              "\"spacing\": \"none\"," +
+                              "\"wrap\": true," +
+                              "\"size\": \"Small\"" +
                             "}" +
                           "]," +
                           "\"width\": 60," +
                           "\"verticalContentAlignment\": \"Center\"" +
                         "}" +
                       "]," +
-                      "\"horizontalAlignment\": \"Center\""+
+                      "\"horizontalAlignment\": \"Center\"" +
                     "},";
-                    }
+                }
 
+               
+                //Badge Image
                 cardJsons += "{" +
-                  "\"type\": \"Image\"," +
-                  "\"url\": \"" + _badgeList.badge[0].badgeImage + "\"," +
-                  "\"horizontalAlignment\": \"Center\"," +
-                  "\"spacing\": \"Large\"" +
-                "},";
+                      "\"type\": \"ColumnSet\"," +
+                      "\"columns\": [" +
+                        "{" +
+                          "\"type\": \"Column\"," +
+                          "\"items\": [" +
+                            "{" +
+                              "\"type\": \"Image\"," +
+                              "\"spacing\": \"None\"," +
+                              "\"url\": \"" + _badgeList.badge[0].badgeImage + "\"," +
+                              //"\"size\": \"Medium\"," +
+                              "\"horizontalAlignment\": \"Center\"" +
+                            "}," +
+                            "{" +
+                              "\"type\": \"TextBlock\"," +
+                              "\"weight\": \"Lighter\"," +
+                              "\"text\": \"" + _badgeList.badge[0].badgeName + "\"," +
+                              "\"wrap\": \"true\"," +
+                              "\"horizontalAlignment\": \"Center\"" +
+                            "}" +
+                          "]" +
+                        "}" +
+                      "]," +
+                      "\"spacing\": \"Medium\""+
+                    "},";
+
+                //Value Behaviour
+                var valuesBehaviourText = "Values/Behaviors";
                 if (_badgeList.behaviour != "")
                 {
                     cardJsons += "{" +
                       "\"type\": \"TextBlock\"," +
-                      "\"text\": \"Vishvas  Behaviours\"," +
+                      "\"text\": \""+ valuesBehaviourText + "\"," +
                       "\"wrap\": true," +
                       "\"horizontalAlignment\": \"Center\"" +
                     "}," +
@@ -411,7 +344,8 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
                       "\"color\": \"Accent\"" +
                     "},";
                 }
-                cardJsons+="{" +
+                //Reason for Applause
+                cardJsons += "{" +
                   "\"type\": \"TextBlock\"," +
                   "\"text\": \"Reason for applause\"," +
                   "\"wrap\": true," +
@@ -426,14 +360,23 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
                   "\"color\": \"Accent\"" +
                 "}";
 
-                foreach (var recp in awardedrecipentdetails) {
+                //At mentioned text
+                var upnMentioned = "";
+                foreach (var recp in awardedrecipentdetails)
+                {
+                    if (upnMentioned != "")
+                    {
+                        upnMentioned += ", ";
+                    }
+                    upnMentioned += "<at>" + recp.UPN + "</at>";
 
-                    cardJsons += ",{" +
-                      "\"type\": \"TextBlock\"," +
-                      "\"text\": \"<at>" +recp.UPN + "</at>\"" +
-                    "}";
                 }
-
+                cardJsons += ",{" +
+                      "\"type\": \"TextBlock\"," +
+                      "\"wrap\": \"true\"," +
+                      "\"separator\": true," +
+                      "\"text\": \"" + upnMentioned + "\"" +
+                    "}";
                 cardJsons += "]," +
                 "\"msteams\": {" +
                   "\"entities\": [";
@@ -445,23 +388,23 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
                       "\"type\": \"mention\"," +
                       "\"text\": \"<at>" + recp.UPN + "</at>\"," +
                       "\"mentioned\": {" +
-                        "\"id\": \"" +recp.UserId + "\"," +
+                        "\"id\": \"" + recp.UserId + "\"," +
                         "\"name\": \"" + recp.UPN + "\"" +
                       "}" +
                     "}";
                     if (j > 1)
                     {
-                        if(i<j)
+                        if (i < j)
                         {
                             cardJsons += ",";
                         }
                     }
                     i++;
                 }
-                     
-    cardJsons += "]" +
-  "}" +
-"}";
+
+                cardJsons += "]" +
+              "}" +
+            "}";
                 var adaptiveCardAttachments = new Attachment()
                 {
                     ContentType = "application/vnd.microsoft.card.adaptive",
@@ -469,11 +412,14 @@ namespace ICICILombard.TeamsApp.ChampApp.Cards
                 };
                 return adaptiveCardAttachments;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
+                ex.ToString();
                 return null;
             }
+
         }
+
 
     }
 }

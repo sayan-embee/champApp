@@ -87,12 +87,21 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
     {
         public string RecipentName { get; set; }
         public string RecipentEmail { get; set; }
+        public string RecipentUPN { get; set; }
+        public string RecipentAadObjectId { get; set; }
+        public string Department { get; set; }
+        public string Designation { get; set; }
+        public string ReportingManagerName { get; set; }
+        public string ReportingManagerEmail { get; set; }
+        public string ReporitngManagerUPN { get; set; }
     }
 
     public class Award
     {
         public string AwardedByEmail { get; set; }
         public string AwardedByName { get; set; }
+        public string AwardedByUPN { get; set; }
+        public string AwardedByAadObjectId { get; set; }
         public int CardId { get; set; }
         public string CardName { get; set; }
         public int IsGroup { get; set; }
@@ -104,6 +113,14 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
         public string BehaviourName { get; set; }
         public string Notes { get; set; }
         public List<AwardRecipents> Recipents { get; set; }
+        public string TeamId { get; set; }
+        public string TeamName { get; set; }
+        public string ChatId { get; set; }
+        public string Department { get; set; }
+        public string Designation { get; set; }
+        public string ReportingManagerName { get; set; }
+        public string ReportingManagerEmail { get; set; }
+        public string ReporitngManagerUPN { get; set; }
     }
 
     public class AwardList
@@ -168,11 +185,21 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
         public string EmployeeName { get; set; }
         public string EmployeeEmail { get; set; }
     }
-
     public class TeamsAwardRecipent
     {
         public string UserId { get; set; }
         public string UPN { get; set; }
     }
 
+    public class MemberDetails
+    {
+        public string id { get; set; }
+        public string email { get; set; }
+        public string displayName { get; set; }
+        public string givenName { get; set; }
+        public string aadObjectId { get; set; }
+        public string role { get; set; }
+        public string upn { get; set; }
+        public string photo { get; set; }
+    }
 }

@@ -22,15 +22,12 @@ class AdminInitial extends React.Component<MyState> {
     }
 
     submit(){
-        console.log("submit")
         microsoftTeams.settings.setValidityState(true);
         this.save()
     }
 
      save(){
-        console.log("save 1")
         microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
-            console.log("save 2")
             microsoftTeams.settings.setSettings({
                 websiteUrl: url,
                 contentUrl: url+'/admin_preview',

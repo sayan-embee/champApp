@@ -85,7 +85,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
         private readonly IGraphServiceClientHelper graphServiceClientHelper;
         private readonly IApplicationDetailProvider applicationDetailProvider;
         private readonly BotSettings configurationSettings;
-
+        private readonly IGraphServiceClientProvider graphServiceClientProvider;
         /// <summary>
         /// Initializes a new instance of the <see cref="ChampController"/> class.
         /// </summary>
@@ -108,7 +108,8 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
             IKeyVaultHelper keyVaultHelper,
             IGraphServiceClientHelper graphServiceClientHelper,
             IOptionsMonitor<BotSettings> optionsAccessor,
-            IApplicationDetailProvider applicationDetailProvider
+            IApplicationDetailProvider applicationDetailProvider,
+            IGraphServiceClientProvider graphServiceClientProvider
             )
         {
             this.configurationSettings = optionsAccessor.CurrentValue;
@@ -120,41 +121,71 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
 
             this.superUserSettings = superUserSettings.CurrentValue;
             this.keyVaultBaseUrl = this.superUserSettings.BaseUrl;
-
+            
 
             this.keyVaultHelper = keyVaultHelper;
             this.graphServiceClientHelper = graphServiceClientHelper;
             this.appBaseUrl = this.configurationSettings.AppBaseUri;
             this.tenantId = this.configurationSettings.TenantId;
             this.applicationDetailProvider = applicationDetailProvider;
+            this.graphServiceClientProvider = graphServiceClientProvider;
         }
 
-        /* [Route("teammembers1")]
-         public  async Task<IActionResult> GetTeamMembers1Async([FromHeader] string authorization, string teamId)
-         {
-
-
-
-             try
-             {
-                 string ssoToken = authorization.Substring("Bearer".Length + 1);
-
-                 if (teamId == null)
-                 {
-                     return this.BadRequest(new { message = "Team ID cannot be empty." });
-                 }                
-                 var members=await this.graphServiceClientHelper.GetTeamMembersAsync(teamId);
-
-                 return  this.Ok(members);
-             }
-             catch (Exception ex)
-             {
-                 this.logger.LogError(ex, "Error occurred while getting team member list.");
-                 throw;
-             }
-         }*/
+      
         [Route("teammembers")]
         public async Task<IActionResult> GetTeamMembersAsync([FromHeader] string authorization, string teamId)
+        {
+            try
+            {
+                if (teamId == null)
+                {
+                    return this.BadRequest(new { message = "Team ID cannot be empty." });
+                }
+
+                var userClaims = this.GetUserClaims();
+
+                IEnumerable<TeamsChannelAccount> teamsChannelAccounts = new List<TeamsChannelAccount>();
+                var conversationReference = new ConversationReference
+                {
+                    ChannelId = teamId,
+                    ServiceUrl = userClaims.ServiceUrl,
+                   
+                };
+              
+                await this.botAdapter.ContinueConversationAsync(
+                    this.appId,
+                    conversationReference,
+                    async (context, token) =>
+                    {
+                        teamsChannelAccounts = await TeamsInfo.GetTeamMembersAsync(context, teamId, default);
+                    },
+                    default);
+
+                var members = teamsChannelAccounts.Where(x=>!string.IsNullOrEmpty(x.Email)).Select(member => new MemberDetails { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }).ToList();
+               if (members != null)
+                {
+                    var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
+
+                    for (int i = 0; i < members.Count(); i++)
+                    {
+                        var userPhoto = await this.graphServiceClientHelper.GetUserPhotoAsync(graphClient, members[i].aadObjectId);
+                        members[i].photo = userPhoto;
+                    }
+
+                }
+                return this.Ok(members);
+                //return this.Ok(teamsChannelAccounts.Select(member => new {id=member.Id,  email = member.Email, displayName = member.Name, givenName=member.GivenName, aadObjectId=member.AadObjectId,role=member.UserRole,upn=member.UserPrincipalName }));
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogging.SendErrorToText(ex);
+                this.logger.LogError(ex, "Error occurred while getting team member list.");
+                throw;
+            }
+        }
+
+        [Route("teammemberssearch")]
+        public async Task<IActionResult> GetTeamMembersSearchAsync([FromHeader] string authorization, string teamId,string searchKey)
         {
             try
             {
@@ -182,18 +213,86 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
                     },
                     default);
 
-                return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
+                    var members = teamsChannelAccounts.Where(x => x.Name.ToLower().IndexOf(searchKey) >= 0 &&  !string.IsNullOrEmpty(x.Email)).Select(member => new MemberDetails { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }).ToList();
+               if (members != null)
+                {
+                    var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
+
+                    for (int i=0;i< members.Count(); i++)
+                        {
+                           var userPhoto=await this.graphServiceClientHelper.GetUserPhotoAsync(graphClient, members[i].aadObjectId);
+                            members[i].photo = userPhoto;
+                        }
+
+                    }
+                    return this.Ok(members);
             }
             catch (Exception ex)
             {
+                ExceptionLogging.SendErrorToText(ex);
+                this.logger.LogError(ex, "Error occurred while getting team member list.");
+                throw;
+            }
+        }
+        [Route("chatmembers")]
+        public async Task<IActionResult> GetChatMembersAsync([FromHeader] string authorization, string chatId)
+        {
+            try
+            {
+                if (chatId == null)
+                {
+                    return this.BadRequest(new { message = "Team ID cannot be empty." });
+                }
+
+                var userClaims = this.GetUserClaims();
+
+                IEnumerable<TeamsChannelAccount> teamsChannelAccounts = new List<TeamsChannelAccount>();
+               
+                var conversationReference = new ConversationReference()
+                {
+                    Conversation=new ConversationAccount()
+                    {
+                        Id=chatId,
+                        TenantId= this.tenantId
+                    },
+                    ServiceUrl = userClaims.ServiceUrl,
+                };
+
+               
+                await this.botAdapter.ContinueConversationAsync(
+                    this.appId,
+                    conversationReference,
+                    async (context, token) =>
+                    {
+                        teamsChannelAccounts = await TeamsInfo.GetMembersAsync(context,  default);
+                    },
+                    default);
+
+                var members = teamsChannelAccounts.Where(x => !string.IsNullOrEmpty(x.Email)).Select(member => new MemberDetails { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }).ToList();
+                if (members != null)
+                {
+                    var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
+
+                    for (int i = 0; i < members.Count(); i++)
+                    {
+                        var userPhoto = await this.graphServiceClientHelper.GetUserPhotoAsync(graphClient, members[i].aadObjectId);
+                        members[i].photo = userPhoto;
+                    }
+
+                }
+                return this.Ok(members);
+                //return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogging.SendErrorToText(ex);
                 this.logger.LogError(ex, "Error occurred while getting team member list.");
                 throw;
             }
         }
 
-
-        [Route("chatmembers")]
-        public async Task<IActionResult> GetChatMembersAsync([FromHeader] string authorization, string chatId)
+        [Route("chatmemberssearch")]
+        public async Task<IActionResult> GetChatMembersSearchAsync([FromHeader] string authorization, string chatId,string searchKey)
         {
             try
             {
@@ -226,10 +325,23 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
                     },
                     default);
 
-                return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
+                var members = teamsChannelAccounts.Where(x => x.Name.ToLower().IndexOf(searchKey) >= 0 && !string.IsNullOrEmpty(x.Email)).Select(member => new MemberDetails { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }).ToList();
+                if (members != null)
+                {
+                    var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
+                    for (int i = 0; i < members.Count(); i++)
+                    {
+                        var userPhoto = await this.graphServiceClientHelper.GetUserPhotoAsync(graphClient, members[i].aadObjectId);
+                        members[i].photo = userPhoto;
+                    }
+
+                }
+                return this.Ok(members);
+                //return this.Ok(teamsChannelAccounts.Select(member => new { id = member.Id, email = member.Email, displayName = member.Name, givenName = member.GivenName, aadObjectId = member.AadObjectId, role = member.UserRole, upn = member.UserPrincipalName }));
             }
             catch (Exception ex)
             {
+                ExceptionLogging.SendErrorToText(ex);
                 this.logger.LogError(ex, "Error occurred while getting team member list.");
                 throw;
             }
@@ -242,7 +354,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
 
         [HttpPost]
         [Route("addvishvasbehaviour")]
-        public async Task<IActionResult> AddVishvasBehaviour(VishvasBehaviour request)
+        public async Task<IActionResult>AddVishvasBehaviour(VishvasBehaviour request)
         {
             try
             {
@@ -416,51 +528,7 @@ namespace ICICILombard.TeamsApp.ChampApp.Controllers
             }
         }
 
-        [Route("viswas-behaviour")]
-        [HttpGet]
-        public async Task<IActionResult> GetViswasBehaviourAsync()
-        {
-            try
-            {
-                List<ViswasBehaviour> viswasBehaviourList = new List<ViswasBehaviour>();
-                viswasBehaviourList.Add(new ViswasBehaviour() { Title = "Walking Togather", Id = "1" });
-                viswasBehaviourList.Add(new ViswasBehaviour() { Title = "Genorisity", Id = "2" });
-
-                return this.Ok(await Task.FromResult(viswasBehaviourList));
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error occurred while viswas behaviour list.");
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Get the list of viswas behaviour.
-        /// </summary>
-        /// <returns>List of viswas behaviour item</returns>
-        [Route("badges")]
-        [HttpGet]
-        public async Task<IActionResult> GetBadgesAsync()
-        {
-            try
-            {
-                List<BadgeDetail> badgeDetailList = new List<BadgeDetail>();
-                badgeDetailList.Add(new BadgeDetail() { Name = "Platinium", Id = "1", Description = "Platinium", ImageUrl = this.appBaseUrl + "/images/platinum.png", Color = "#cfe8fd" });
-                badgeDetailList.Add(new BadgeDetail() { Name = "Gold", Id = "2", Description = "Gold", ImageUrl = this.appBaseUrl + "/images/gold.png", Color = "#fbcd7c" });
-                badgeDetailList.Add(new BadgeDetail() { Name = "Silver", Id = "3", Description = "Silver", ImageUrl = this.appBaseUrl + "/images/silver.png", Color = "#efedea" });
-                badgeDetailList.Add(new BadgeDetail() { Name = "Bronze", Id = "4", Description = "Bronze", ImageUrl = this.appBaseUrl + "/images/bronze.png", Color = "#fbd5bd" });
-                badgeDetailList.Add(new BadgeDetail() { Name = "Well done", Id = "5", Description = "Bronze", ImageUrl = this.appBaseUrl + "/images/welldone.png", Color = "#c0fdaa" });
-                badgeDetailList.Add(new BadgeDetail() { Name = "Thank you", Id = "6", Description = "Thank you", ImageUrl = this.appBaseUrl + "/images/thankyou.png", Color = "#d597f9" });
-
-                return this.Ok(await Task.FromResult(badgeDetailList));
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "Error occurred while badge list.");
-                throw;
-            }
-        }
+        
 
         /// <summary>
         /// Get claims of user.

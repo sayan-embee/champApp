@@ -11,8 +11,10 @@ import Toggle from 'react-toggle'
 // import ImageUploader from 'react-images-upload';
 
 const base_URL = window.location.origin
-const editImage = require("./../../assets/edit.svg")
-const backImage = require("./../../assets/left-arrow.svg")
+const editImage = base_URL + "/images/edit.svg"
+const backImage = base_URL + "/images/left-arrow.svg"
+const upArrow = base_URL + "/images/upArrow.png"
+const downArrow = base_URL + "/images/downArrow.png"
 
 interface ITaskInfo {
     title?: string;
@@ -30,10 +32,14 @@ interface IBadgeProps {
 }
 
 interface MyState {
-    BadgeList?: any;
+    badgeList?: any;
     base64Image?: any;
     loading?: any;
-    url?: any
+    addNewTaskModuleURL?: any;
+    nameFieldSort?: any;
+    nameFieldSortIcon?: any;
+    activeFieldSort?: any;
+    activeFieldSortIcon?: any
 };
 
 
@@ -43,7 +49,9 @@ class Badge extends React.Component<IBadgeProps, MyState> {
         super(props);
         this.state = {
             loading: true,
-            url: base_URL + '/addbadge'
+            addNewTaskModuleURL: base_URL+'/addbadge',
+            nameFieldSort: true,
+            nameFieldSortIcon: true
         };
     }
 
@@ -57,9 +65,9 @@ class Badge extends React.Component<IBadgeProps, MyState> {
             "CardId": 0
         }
         getApplauseCardAPI(data).then((res) => {
-            console.log("get ApplauseCard API", res);
+            // console.log("get ApplauseCard API", res);
             this.setState({
-                BadgeList: res.data,
+                badgeList: res.data.sort((a: any, b: any) => (a.cardName > b.cardName) ? 1 : ((b.cardName > a.cardName) ? -1 : 0)),
                 base64Image: null,
                 loading: false
             })
@@ -73,17 +81,14 @@ class Badge extends React.Component<IBadgeProps, MyState> {
 
     addNewTaskModule = () => {
         let taskInfo: ITaskInfo = {
-            url: this.state.url,
+            url: this.state.addNewTaskModuleURL,
             title: "Create New Applaud Card",
             height: 350,
             width: 600,
-            fallbackUrl: this.state.url,
+            fallbackUrl: this.state.addNewTaskModuleURL,
         }
-        console.log("task module", taskInfo);
         let submitHandler = (err: any, result: any) => {
-            console.log("errr", err);
-            console.log("result", result);
-            this.getApplauseCard()
+         this.getApplauseCard()
         };
 
         microsoftTeams.tasks.startTask(taskInfo, submitHandler);
@@ -91,20 +96,19 @@ class Badge extends React.Component<IBadgeProps, MyState> {
 
     editTaskModule = (data: any) => {
         let taskInfo: ITaskInfo = {
-            url: `${base_URL}/editbadge?id=${data.cardId}&name=${data.cardName}&active=${data.isActive}`,
+            url: `${base_URL}/editbadge?id=${data.cardId}`,
             title: "Edit Applaud Card",
             height: 350,
             width: 600,
-            fallbackUrl: this.state.url,
+            fallbackUrl: `${base_URL}/editbadge?id=${data.cardId}`,
         }
-        console.log("task module", taskInfo);
         let submitHandler = (err: any, result: any) => {
             this.setState({
-                loading:true
-            },()=>{
+                loading: true
+            }, () => {
                 this.getApplauseCard()
             })
-            
+
         };
 
         microsoftTeams.tasks.startTask(taskInfo, submitHandler);
@@ -115,6 +119,51 @@ class Badge extends React.Component<IBadgeProps, MyState> {
         this.props.history.push(`/admin_preview`)
     }
 
+    ////////////////////// Name field sort ///////////////////////
+    nameSort() {
+        this.setState({
+            activeFieldSort: false,
+            nameFieldSortIcon: true,
+            activeFieldSortIcon: false
+        }, () => {
+            if (this.state.nameFieldSort) {
+                this.setState({
+                    badgeList: this.state.badgeList.reverse((a: any, b: any) => (a.cardName > b.cardName) ? 1 : ((b.cardName > a.cardName) ? -1 : 0)),
+                    nameFieldSort: false,
+                })
+            }
+            else {
+                this.setState({
+                    badgeList: this.state.badgeList.sort((a: any, b: any) => (a.cardName > b.cardName) ? 1 : ((b.cardName > a.cardName) ? -1 : 0)),
+                    nameFieldSort: true,
+                })
+            }
+        })
+    }
+
+    ///////////////////////// Active field sort /////////////////////////////
+    activeSort() {
+        this.setState({
+            nameFieldSort: false,
+            nameFieldSortIcon: false,
+            activeFieldSortIcon: true
+        }, () => {
+            if (this.state.activeFieldSort) {
+                this.setState({
+                    badgeList: this.state.badgeList.reverse((a: any, b: any) => b.isActive - a.isActive),
+                    activeFieldSort: false,
+                })
+            }
+            else {
+                this.setState({
+                    badgeList: this.state.badgeList.sort((a: any, b: any) => b.isActive - a.isActive),
+                    activeFieldSort: true,
+                })
+            }
+        })
+    }
+
+
 
     render() {
 
@@ -123,7 +172,7 @@ class Badge extends React.Component<IBadgeProps, MyState> {
                 <div>
                     <div className="displayFlex" style={{ alignItems: "center" }}>
                         <div className="backButton pointer" onClick={() => this.back()}>
-                            <img src={backImage.default}/>
+                            <img src={backImage} />
                         </div>
 
                         <Header as="h3" content="Applaud Cards" className="headingText"></Header>
@@ -136,22 +185,32 @@ class Badge extends React.Component<IBadgeProps, MyState> {
 
                 {!this.state.loading ? <table className="ViswasTable">
                     <tr>
-                        <th>Name</th>
+                        <th>
+                            <div className="displayFlex pointer" onClick={() => this.nameSort()}  >
+                                <div style={{ marginRight: "5px" }}> Name </div>
+                                {this.state.nameFieldSortIcon && <img style={{ marginTop: "3px" }} src={(this.state.nameFieldSort) ? downArrow : upArrow} />}
+                            </div>
+                        </th>
                         <th>Icon</th>
-                        <th style={{ textAlign: "center", paddingRight: '25px' }}>Active</th>
+                        <th>
+                            <div className="displayFlex pointer" style={{justifyContent:"center",paddingRight:"10px"}} onClick={() => this.activeSort()} >
+                                <div style={{ marginRight: "5px"}}> Active </div>
+                                {this.state.activeFieldSortIcon && <img style={{ marginTop: "3px" }} src={(this.state.activeFieldSort) ? downArrow : upArrow} />}
+                            </div>
+                        </th>
                         <th style={{ textAlign: "end", paddingRight: '45px' }}>Action</th>
                     </tr>
-                    {this.state.BadgeList && this.state.BadgeList.map((e: any) => {
+                    {this.state.badgeList && this.state.badgeList.map((e: any) => {
                         return <tr className="ViswasTableRow">
                             <td>{e.cardName}</td>
                             <td>
-                            <div className="reportListImageDiv">
-                                <img src={e.cardImage} className="badgePageIcon" />
+                                <div className="reportListImageDiv">
+                                    <img src={e.cardImage} className="badgePageIcon" />
                                 </div>
-                                </td>
+                            </td>
                             <td>
                                 <Flex styles={{ alignItems: "center", justifyContent: "center" }}>
-                                    <Toggle disabled={true} defaultChecked={(e.isActive === 1) ? true : false} icons={false} />
+                                    <Toggle disabled={true} checked={e.isActive} icons={false} />
                                     <Text styles={{ marginLeft: "5px" }}>{e.isActive ? "Yes" : "No"}</Text>
                                 </Flex>
 
@@ -159,7 +218,7 @@ class Badge extends React.Component<IBadgeProps, MyState> {
                             <td style={{ textAlign: "end" }}>
                                 <div className="tableEditDiv">
                                     <div style={{ marginRight: "10px" }}> Edit </div>
-                                    <div className="editButton pointer" onClick={() => this.editTaskModule(e)}  ><img src={editImage.default} /></div>
+                                    <div className="editButton pointer" onClick={() => this.editTaskModule(e)}  ><img src={editImage} /></div>
                                 </div>
                             </td>
                         </tr>

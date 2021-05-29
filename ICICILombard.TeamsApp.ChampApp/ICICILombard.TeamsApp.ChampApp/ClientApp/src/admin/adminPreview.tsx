@@ -1,9 +1,9 @@
 import React from 'react';
 import { Header, Flex, Button, Card, CardBody} from "@fluentui/react-northstar";
-import { ArrowRightIcon } from '@fluentui/react-icons-northstar';
+
 import "./../styles.scss"
 
-const rightArrowImage=require("./../assets/right-arrow.svg")
+const rightArrowImage=window.location.origin+"/images/right-arrow.svg"
 
 interface IPreviewProps {
     history?: any;
@@ -100,7 +100,7 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
                   
                 }} /> */}
                 <Flex hAlign="end" vAlign="end" gap="gap.smaller">
-                  <Button className="curve-btn" title="Values/Behaviour" onClick={()=>this.viswas()} ><img src={rightArrowImage.default}/></Button>
+                  <Button className="curve-btn" title="Values/Behaviour" onClick={()=>this.viswas()} ><img src={rightArrowImage}/></Button>
                 </Flex>
               </Card>
             </Flex>
@@ -136,7 +136,7 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
                   color:"black",
                 }} />
                 <Flex hAlign="end" vAlign="end" gap="gap.smaller"> 
-                  <Button className="curve-btn" title="Applause Card" onClick={()=>this.card()}><img src={rightArrowImage.default}/></Button>
+                  <Button className="curve-btn" title="Applause Card" onClick={()=>this.card()}><img src={rightArrowImage}/></Button>
                 </Flex>
               </Card>
             </Flex>
@@ -171,7 +171,7 @@ class AdminPreview extends React.Component<IPreviewProps, IPreviewState> {
                   color:"black",
                 }} />
                 <Flex hAlign="end" vAlign="end" gap="gap.smaller">
-                  <Button className="curve-btn" title="Settings" onClick={()=>this.setting()} ><img src={rightArrowImage.default}/></Button>
+                  <Button className="curve-btn" title="Settings" onClick={()=>this.setting()} ><img src={rightArrowImage}/></Button>
                 </Flex>
               </Card>
             </Flex>

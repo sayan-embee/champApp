@@ -33,11 +33,18 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
         /// </summary>
         private readonly IGraphServiceClientProvider graphServiceClientProvider;
 
-
+        /// <summary>
+        /// Get Iconfiguration values.
+        /// </summary>
         private readonly IConfiguration configuration;
 
 
-
+        /// <summary>
+        /// Graph Service Client Helper Class
+        /// </summary>
+        /// <param name="graphServiceClientProvider">Graph Service Client Provider Reference.</param>
+        /// <param name="telemetryClient">Telemetry Client</param>
+        /// <param name="configuration">IConfiguration.</param>
         public GraphServiceClientHelper(IGraphServiceClientProvider graphServiceClientProvider, TelemetryClient telemetryClient, IConfiguration configuration)
         {
             this.graphServiceClientProvider = graphServiceClientProvider;
@@ -45,6 +52,11 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
             this.configuration = configuration;
 
         }
+        /// <summary>
+        /// Get team channel member details based on channel Id
+        /// </summary>
+        /// <param name="teamId">Channel Id</param>
+        /// <returns>ITeamMembersCollectionPage</returns>
         public async Task<ITeamMembersCollectionPage> GetTeamMembersAsync(string teamId)
         {
             try
@@ -66,6 +78,10 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
             }
         }
 
+        /// <summary>
+        /// Get the chat members detais based on chat Id (one to one or group chat)
+        /// </summary>
+        /// <param name="chatId">Chat Id</param>
         public async Task<IChatMembersCollectionPage> GetChatMembersAsync(string chatId)
         {
             try
@@ -87,16 +103,19 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
             }
         }
 
-        public async Task<UserProfile> GetUserProfileAsync(string email)
+        
+        /// <summary>
+        /// Get the user profile details based on user mail.
+        /// </summary>
+        /// <param name="accessToken">Application access token</param>
+        /// <param name="email">User Email Id.</param>
+        /// <returns>string</returns>
+        public async Task<UserProfile> GetUserProfileAsync(GraphServiceClient graphClient, string email)
         {
             UserProfile _userProfile = null;
             try
             {
                 _userProfile = new UserProfile();
-                var graphClient = await this.graphServiceClientProvider.GetGraphClientApplication();
-                // GraphServiceClient graphClient = this.graphServiceClientProvider.GetGraphApiClientDelegated(new[] { "User.Read.All" });
-
-                //await Task.Delay(100);
                 var response = await graphClient.Users[$"{email}"]
            .Request()
            .Select(u => new
@@ -110,28 +129,33 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
                u.PreferredLanguage,
                u.Surname,
                u.UserPrincipalName,
-               u.Id
+               u.Id,
+               u.Department
            })
-           //.WithUsernamePassword(this.ServiceAccountUserId, getSecureString(this.ServiceAccountPassword))
            .GetAsync();
 
-                //await Task.Delay(100);
-
-                var result = await graphClient
-                    .Users[$"{email}"]
-                    .Photos["48x48"]
-                    .Content
-                    .Request()
-                    //.WithUsernamePassword(this.ServiceAccountUserId, getSecureString(this.ServiceAccountPassword))
-                    .GetAsync();
-                var photo = "";
-                if (result != null)
+               var photo = "";
+                try
                 {
-                    byte[] bytes = new byte[result.Length];
+                    var result = await graphClient
+                        .Users[$"{email}"]
+                        .Photos["48x48"]
+                        .Content
+                        .Request()
+                        .GetAsync();
 
-                    result.Read(bytes, 0, (int)result.Length);
+                    if (result != null)
+                    {
+                        byte[] bytes = new byte[result.Length];
 
-                    photo = "data:image/png;base64, " + Convert.ToBase64String(bytes);
+                        result.Read(bytes, 0, (int)result.Length);
+
+                        photo = "data:image/png;base64, " + Convert.ToBase64String(bytes);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ex.ToString();
                 }
 
                 _userProfile.DisplayName = response.DisplayName;
@@ -145,20 +169,91 @@ namespace ICICILombard.TeamsApp.ChampApp.Helpers
                 _userProfile.UserPrincipalName = response.UserPrincipalName;
                 _userProfile.Id = response.Id;
                 _userProfile.PhotoUrl = photo;
-
+                _userProfile.Department = response.Department;
                 return _userProfile;
             }
             catch (Exception ex)
             {
-                //this.telemetryClient.TrackException(ex);
-                //logger.LogError($"Error in call get user profile for :{email} -> Error message: {ex.Message}");
-                // return null;
                 throw ex;
             }
 
         }
 
+        /// <summary>
+        /// Get the user profile image as based 64.
+        /// </summary>
+        /// <param name="accessToken">Application access token.</param>
+        /// <param name="email">User email Id.</param>
+        /// <returns>string</returns>
+        public async Task<string> GetUserPhotoAsync(GraphServiceClient graphClient, string email)
+        {
+            var photo = "";
 
 
+            try
+            {
+                var result = await graphClient
+                        .Users[$"{email}"]
+                        .Photos["48x48"]
+                        .Content
+                        .Request()
+                        .GetAsync();
+
+                if (result != null)
+                {
+                    byte[] bytes = new byte[result.Length];
+
+                    result.Read(bytes, 0, (int)result.Length);
+
+                    photo = "data:image/png;base64, " + Convert.ToBase64String(bytes);
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return photo;
+            }
+
+            return photo;
+        }
+
+
+        /// <summary>
+        /// Get the user profile image as based 64.
+        /// </summary>
+        /// <param name="accessToken">Application access token.</param>
+        /// <param name="email">User email Id.</param>
+        /// <returns>string</returns>
+        public async Task<User> GetUserManagerAsync(GraphServiceClient graphClient, string email)
+        {
+            try
+            {
+                var result =(User) await graphClient
+                        .Users[$"{email}"]
+                        .Manager
+                        .Request()
+                        .GetAsync();
+               
+                return result;
+               
+            }
+            catch (Exception ex)
+            {
+                ex.ToString();
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Get the application access token.
+        /// </summary>
+        /// <returns>string</returns>
+        public async Task<string> GetAccessTokenAsync()
+        {
+            return await this.graphServiceClientProvider.GetApplicationAccessToken();            
+        }
+
+        
     }
 }

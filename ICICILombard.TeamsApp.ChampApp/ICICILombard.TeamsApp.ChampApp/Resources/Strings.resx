@@ -138,7 +138,7 @@
     <comment>Title for sign in card displayed to user if he is not signed in</comment>
   </data>
   <data name="TaskModuleTitle" xml:space="preserve">
-    <value>Create and award badges</value>
+    <value>Applaud your collegue</value>
     <comment>Task module title</comment>
   </data>
   <data name="CreateBadgeDescription" xml:space="preserve">

@@ -35,7 +35,6 @@ class AddBadge extends React.Component<IBadgeAddProps, MyState> {
     };
 
     onFileChoose(event: any) {
-        console.log("check", event.target.files[0], event.target.files[0].lastModified);
         this.getBase64(event.target.files[0], event.target.files[0].lastModified)
     }
 
@@ -43,13 +42,13 @@ class AddBadge extends React.Component<IBadgeAddProps, MyState> {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            console.log('Photo', reader.result);
+            // console.log('Photo', reader.result);
             this.setState({
                 base64Image: reader.result,
             })
         };
         reader.onerror = function (error) {
-            console.log('Error: ', error);
+            // console.log('Error: ', error);
         };
     }
 
@@ -68,7 +67,6 @@ class AddBadge extends React.Component<IBadgeAddProps, MyState> {
 
         }
         this.addApplauseCard(data)
-        console.log("addNew badge", data);
     }
 
 
@@ -77,7 +75,6 @@ class AddBadge extends React.Component<IBadgeAddProps, MyState> {
             if (res.data.successFlag === 1) {
                 microsoftTeams.tasks.submitTask()
             }
-
         })
     }
 
@@ -142,5 +139,5 @@ class AddBadge extends React.Component<IBadgeAddProps, MyState> {
 }
 
 
-
 export default AddBadge;
+

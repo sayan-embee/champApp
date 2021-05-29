@@ -280,6 +280,15 @@ namespace ICICILombard.TeamsApp.ChampApp.Provider
                     command.Parameters.AddWithValue("@BehaviourId", _formData.BehaviourId);
                     command.Parameters.AddWithValue("@BehaviourName", _formData.BehaviourName);
                     command.Parameters.AddWithValue("@Notes", _formData.Notes);
+                    command.Parameters.AddWithValue("@TeamId", _formData.TeamId);
+                    command.Parameters.AddWithValue("@TeamName", _formData.TeamName);
+                    command.Parameters.AddWithValue("@ChatId", _formData.ChatId);
+                    command.Parameters.AddWithValue("@Department", _formData.Department);
+                    command.Parameters.AddWithValue("@Designation", _formData.Designation);
+                    command.Parameters.AddWithValue("@UserPrincipalName", _formData.AwardedByUPN);
+                    command.Parameters.AddWithValue("@ReportingManagerName", _formData.ReportingManagerName);
+                    command.Parameters.AddWithValue("@ReportingManagerEmail", _formData.ReportingManagerEmail);
+                    command.Parameters.AddWithValue("@ReporitngManagerUPN", _formData.ReporitngManagerUPN);
                     SqlParameter tblParameter = new SqlParameter();
                     tblParameter.SqlDbType = SqlDbType.Structured;
                     tblParameter.ParameterName = "@Recipents";
@@ -314,12 +323,18 @@ namespace ICICILombard.TeamsApp.ChampApp.Provider
         private DataTable GenerateDataTableRecipents(List<AwardRecipents> recipents)
         {
             DataTable dt = new DataTable();
-            dt.Columns.Add("RecipentName", typeof(string));
             dt.Columns.Add("RecipentEmail", typeof(string));
+            dt.Columns.Add("RecipentName", typeof(string));
+            dt.Columns.Add("UserPrincipalName", typeof(string));
+            dt.Columns.Add("Department", typeof(string));
+            dt.Columns.Add("Designation", typeof(string));            
+            dt.Columns.Add("ReportingManagerName", typeof(string));
+            dt.Columns.Add("ReportingManagerEmail", typeof(string));
+            dt.Columns.Add("ReporitngManagerUPN", typeof(string));
 
             foreach (var dtl in recipents)
             {
-                dt.Rows.Add(dtl.RecipentName, dtl.RecipentEmail);
+                dt.Rows.Add(dtl.RecipentEmail, dtl.RecipentName, dtl.RecipentUPN, dtl.Department, dtl.Designation,dtl.ReportingManagerName,dtl.ReportingManagerEmail,dtl.ReporitngManagerUPN);
             }
             return dt;
         }

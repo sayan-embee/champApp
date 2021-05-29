@@ -1,7 +1,6 @@
 import React from 'react';
-import { SearchIcon, ComposeIcon } from '@fluentui/react-icons-northstar';
 
-import { Button, Loader, Input, FormDatepicker, Text, FormInput, Flex } from "@fluentui/react-northstar";
+import { Button, Loader, FormDatepicker, Text, FormInput, Flex } from "@fluentui/react-northstar";
 import { CSVLink } from "react-csv";
 
 import "./../styles.scss"
@@ -43,7 +42,7 @@ class ChampList extends React.Component<MyState> {
 
     getAwardList(data: any) {
         getAwardListAPI(data).then((res) => {
-            console.log("get award", res);
+            // console.log("get award", res);
             if (res.status === 200) {
                 const downloadDataList = res.data.map((e: any) => {
                     let b = {
@@ -51,7 +50,7 @@ class ChampList extends React.Component<MyState> {
                         "Applaud Card":  e.cardName,
                         "Awarded On": e.awardDate,
                         "Values/Behaviors": e.behaviourName,
-                        "Received By": e.recipentEmail + ' ( ' + e.recipentName + ' )',
+                        "Received By": e.recipentName + ' ( ' + e.recipentEmail + ' )',
                         "Notes": e.notes
                     }
                     return b
@@ -67,7 +66,6 @@ class ChampList extends React.Component<MyState> {
     }
 
     fromDate(e: any, v: any) {
-        console.log(v.value);
         var date = new Date(v.value)
         let mnth = ("0" + (date.getMonth() + 1)).slice(-2)
         let day = ("0" + date.getDate()).slice(-2)
@@ -128,7 +126,7 @@ class ChampList extends React.Component<MyState> {
                             return <tr className="ViswasTableRow">
                                 <td>
                                     {/* <div style={{ fontWeight: "bold" }}> */}
-                                    {e.recipentEmail}
+                                    {e.recipentName}
                                     {/* </div> */}
                                 </td>
                                 <td >

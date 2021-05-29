@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, FormTextArea, FormDropdown, Text, Flex, Button, Card, Input, CardBody } from "@fluentui/react-northstar";
-import { ArrowLeftIcon, SearchIcon, CloseIcon } from '@fluentui/react-icons-northstar';
+// import { SearchIcon } from '@fluentui/react-icons-northstar';
 
 import "./../styles.scss"
 
@@ -9,9 +9,10 @@ import { getAppSettingAPI } from "../apis/settingApi"
 import { getViswasBehaviourAPI } from './../apis/ViswasBehaviourApi'
 import * as microsoftTeams from "@microsoft/teams-js";
 
-const backImage = require("./../assets/left-arrow.svg")
-const cancelImage = require("./../assets/cancel.svg")
 
+const baseUrl = window.location.origin
+const backImage = baseUrl + "/images/left-arrow.svg"
+const cancelImage = baseUrl + "/images/cancel.svg"
 
 interface IDetailsProps {
   location?: any;
@@ -21,7 +22,6 @@ interface IDetailsProps {
 interface IDetailsState {
   badgeName?: any;
   badgeImage?: any;
-  badgeColor?: any;
   behaviourInputItem?: any;
   formItem?: any;
   behaviours?: any;
@@ -29,9 +29,7 @@ interface IDetailsState {
   invalidReason?: any;
   allData?: any;
   files?: any;
-  showList?: any;
   selectedEmployeeName?: any;
-  selectedEmployeeNamec?: any;
   searchItem?: any;
   multipleSelection?: any;
   teamMembers?: any;
@@ -39,17 +37,15 @@ interface IDetailsState {
   userId?: any;
   UPN?: any;
   awardedByName?: any;
+  awardedByImage?: any;
   groupId?: any;
   token?: any;
   chatId?: any;
-  personalChat?: any;
   viswasBehaviourRequire?: any;
   IsGroupSingle?: any;
   IsGroupMultiple?: any;
   IsChannelSingle?: any;
   IsChannelMultiple?: any;
-  getData?: any;
-  behaviourId?: any;
   behaviourList?: any;
   behavioursId?: any;
   channelName?: any;
@@ -57,6 +53,7 @@ interface IDetailsState {
   channelId?: any;
   userObjectId?: any;
   teamId?: any;
+  teamName?:any;
   IsGroup?: any;
   IsTeam?: any,
   IsChat?: any,
@@ -73,7 +70,6 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
       ],
       allData: [],
       selectedEmployeeName: [],
-      selectedEmployeeNamec: [],
       Recipents: [],
       multipleSelection: true,
       invalidReason: false
@@ -88,7 +84,6 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
       this.setState({
         badgeImage: this.props.location.state.data && this.props.location.state.data.badgeImage,
         badgeName: this.props.location.state.data && this.props.location.state.data.badgeName,
-        badgeColor: this.props.location.state.data && this.props.location.state.data.badgeColor,
         badgeId: this.props.location.state.data && this.props.location.state.data.badgeId,
         groupId: this.props.location.state.groupId && this.props.location.state.groupId,
         chatId: this.props.location.state.chatId && this.props.location.state.chatId,
@@ -98,6 +93,7 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
         userObjectId: this.props.location.state.userObjectId && this.props.location.state.userObjectId,
         UPN: this.props.location.state.UPN && this.props.location.state.UPN,
         teamId: this.props.location.state.teamId && this.props.location.state.teamId,
+        teamName: this.props.location.state.teamName && this.props.location.state.teamName,
         channelId: this.props.location.state.channelId && this.props.location.state.channelId,
         reason: this.props.location.state.data && this.props.location.state.data.reason ? this.props.location.state.data.reason : null,
         behaviours: this.props.location.state.data && this.props.location.state.data.behaviours ? this.props.location.state.data.behaviours : null,
@@ -109,20 +105,17 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
         this.getAppSetting()
       })
     }
-    console.log("details log", this.props.location.state)
-
   }
 
   getAppSetting() {
     getAppSettingAPI().then((res) => {
-      console.log("setting", res);
+      // console.log("setting", res);
       this.setState({
         IsGroupSingle: res.data.isGroupSingle,
         IsGroupMultiple: res.data.isGroupMultiple,
         IsChannelSingle: res.data.isChannelSingle,
         IsChannelMultiple: res.data.isChannelMultiple,
         viswasBehaviourRequire: (res.data.isBehaviourRequired === 1) ? true : false,
-        getData: true,
         multipleSelection: (this.state.chatId != "") ? (res.data.isGroupSingle === 1) ? false : true : (res.data.isChannelSingle === 1) ? false : true
       })
     })
@@ -133,16 +126,13 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
       "BehaviourId": 0
     }
     getViswasBehaviourAPI(data).then((res: any) => {
-      console.log("api visws get", res.data);
+      // console.log("api visws get", res.data);
       let list = res.data
       let result = res.data.filter((e: any) => e.isActive === 1).map((a: any) => a.behaviourName)
       console.log("behaviour input item response", result);
       this.setState({
         behaviourInputItem: result,
         behaviourList: list
-      }, () => {
-        console.log("list", this.state.behaviourList);
-
       })
     })
 
@@ -163,9 +153,8 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
 
   getTeamMembers = () => {
     if (this.state.chatId != "") {
-      console.log("chat", this.state.chatId);
       getChatMembersAPI(this.state.chatId, this.state.token).then((res) => {
-        console.log("chat member", res.data);
+        // console.log("chat member", res.data);
         let member = res.data.filter((e: any) => e.upn !== this.state.UPN)
         this.setState({
           teamMembers: member
@@ -175,7 +164,6 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
               this.setState({
                 selectedEmployeeName: [...this.state.selectedEmployeeName, { "name": this.state.teamMembers[0].displayName, "email": this.state.teamMembers[0].email, "userId": this.state.teamMembers[0].aadObjectId }],
                 Recipents: [...this.state.Recipents, { "RecipentName": this.state.teamMembers[0].displayName, "RecipentEmail": this.state.teamMembers[0].email, "userId": this.state.teamMembers[0].aadObjectId }],
-
               })
             }
             this.setState({
@@ -194,7 +182,8 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
           }
           res.data.filter((e: any) => e.upn === this.state.UPN).map((e: any) => {
             this.setState({
-              awardedByName: e.displayName
+              awardedByName: e.displayName,
+              awardedByImage: e.photo
             })
           })
         })
@@ -202,7 +191,7 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
     }
     else {
       getTeamMembersAPI(this.state.channelId, this.state.token).then((res) => {
-        console.log("team member", res.data);
+        // console.log("team member", res.data);
         this.setState({
           teamMembers: res.data,
           IsGroup: 0,
@@ -211,7 +200,8 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
         }, () => {
           res.data.filter((e: any) => e.upn === this.state.UPN).map((e: any) => {
             this.setState({
-              awardedByName: e.displayName
+              awardedByName: e.displayName,
+              awardedByImage: e.photo
             })
           })
         })
@@ -275,19 +265,17 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
       })
     this.setState({
       files: dataSet,
-      showList: true,
     });
   }
 
 
   selectEmployeeNameFunction(ele: any) {
     const employeeMail = ele.email
-    console.log("check", ele)
     if (this.state.selectedEmployeeName.length > 0) {
       const found = this.state.selectedEmployeeName.some((e: any) => e.email === employeeMail)
-      if (!found) {
-        this.setState({
-          selectedEmployeeName: [...this.state.selectedEmployeeName, { "name": ele.displayName, "email": ele.email, "userId": ele.aadObjectId }],
+      if (!found) {    
+       this.setState({
+          selectedEmployeeName: [...this.state.selectedEmployeeName, { "name": ele.displayName, "email": ele.email, "userId": ele.aadObjectId, "photo":ele.photo }],
           Recipents: [...this.state.Recipents, { "RecipentName": ele.displayName, "RecipentEmail": ele.email, "userId": ele.aadObjectId }],
           searchItem: null
         })
@@ -302,9 +290,8 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
 
     }
     else {
-      console.log("check else", ele)
       this.setState({
-        selectedEmployeeName: [...this.state.selectedEmployeeName, { "name": ele.displayName, "email": ele.email, "userId": ele.aadObjectId }],
+        selectedEmployeeName: [...this.state.selectedEmployeeName, { "name": ele.displayName, "email": ele.email, "userId": ele.aadObjectId, "photo":ele.photo }],
         Recipents: [...this.state.Recipents, { "RecipentName": ele.displayName, "RecipentEmail": ele.email, "userId": ele.aadObjectId }],
         searchItem: null
       })
@@ -323,7 +310,7 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
 
   previewBtnFunction() {
     this.setState({
-      allData: [...this.state.allData, { "name": this.state.selectedEmployeeName, "badgeImage": this.state.badgeImage, "badgeName": this.state.badgeName, "badgeColor": this.state.badgeColor, "badgeId": this.state.badgeId, "behaviours": this.state.behaviours, "reason": this.state.reason, "behavioursId": this.state.behavioursId, "Recipents": this.state.Recipents }]
+      allData: [...this.state.allData, { "name": this.state.selectedEmployeeName, "badgeImage": this.state.badgeImage, "badgeName": this.state.badgeName,"badgeId": this.state.badgeId, "behaviours": this.state.behaviours, "reason": this.state.reason, "behavioursId": this.state.behavioursId, "Recipents": this.state.Recipents }]
     }, () => {
       this.props.history.push({
         pathname: '/preview', state: {
@@ -332,15 +319,17 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
           groupId: this.state.groupId,
           chatId: this.state.chatId,
           teamId: this.state.teamId,
+          teamName: this.state.teamName,
           channelId: this.state.channelId,
           userObjectId: this.state.userObjectId,
           userId: this.state.userId,
           UPN: this.state.UPN,
           awardedByName: this.state.awardedByName,
+          awardedByImage:this.state.awardedByImage,
           channelName: this.state.channelName,
-          IsGroup: this.state.IsGroup,
-          IsTeam: this.state.IsTeam,
-          IsChat: this.state.IsChat
+          isGroup: this.state.IsGroup,
+          isTeam: this.state.IsTeam,
+          isChat: this.state.IsChat
         }
       })
     })
@@ -376,11 +365,14 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
 
               {(this.state.teamMembers && this.state.teamMembers.length > 1) ? <div style={{ width: "55%" }}>
                 {this.state.teamMembers && <div>
-                  <Input value={this.state.searchItem} disabled={(!this.state.multipleSelection && (this.state.selectedEmployeeName.length > 0)) ? true : false} required fluid icon={<SearchIcon style={{ height: "15px", width: "15px" }} />} placeholder="Type a name" onChange={(e) => this.search(e)} />
+                  <Input value={this.state.searchItem} disabled={(!this.state.multipleSelection && (this.state.selectedEmployeeName.length > 0)) ? true : false} required fluid 
+                  // icon={<SearchIcon style={{ height: "15px", width: "15px" }} />} 
+                  placeholder="Type a name" onChange={(e) => this.search(e)} />
                   {(this.state.files && (this.state.searchItem)) && <div className='searchList'>
                     {this.state.files.filter((e: any) => e.upn !== this.state.UPN).map((ele: any, i: any) =>
-                      <div key={i} >
-                        <div className='searchResultList' onClick={() => this.selectEmployeeNameFunction(ele)}>
+                      <div key={i} className="displayFlex searchBox"  onClick={() => this.selectEmployeeNameFunction(ele)}>
+                        {(ele.photo !=="")?<img src={ele.photo} className="profileImage"/>:<img src={baseUrl+"/images/userImage.png"} className="profileImage"/>}
+                        <div className='searchResultList'>
                           <Text className="searchResultListEmployeeName"> {ele.displayName} </Text>
                           <Text size="small"> {ele.email} </Text>
                         </div>
@@ -389,7 +381,7 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
                   </div>}
                 </div>}
                 {this.state.selectedEmployeeName && <div>
-                  {this.state.selectedEmployeeName.length > 0 && <div style={{ marginTop: "20px" }}>
+                  {this.state.selectedEmployeeName.length > 0 && <div style={{ marginTop: "20px" }} className="showSelectedEmployeeDiv">
 
                     {/* <div style={{ marginBottom: "10px" }}>
                       <Text content={"Employee Name"} size="large" />
@@ -397,12 +389,19 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
                     {this.state.selectedEmployeeName.map((e: any, i: any) => {
                       return <Flex column styles={{ marginBottom: "10px" }}>
                         <Flex space="between" styles={{ marginBottom: "5px", alignItems: "center" }} >
+                          <div className="displayFlex">
+                            {(e.photo !=="")?<img src={e.photo} className="profileImage"/>
+                              :<img src={baseUrl+"/images/userImage.png"} className="profileImage"/>
+                            }
+                          
                           <div className="showSelectedEmployee">
                             <Text content={e.name} size="medium" />
                             <Text content={e.email} size="smallest" />
                           </div>
+                          </div>
+                          
                           <div className="pointer backButtonMessagingExtention" onClick={() => this.cancelEmployee(i)}>
-                            <img src={cancelImage.default} style={{ height: "12px" }} />
+                            <img src={cancelImage} style={{ height: "12px" }} />
                           </div>
 
                         </Flex>
@@ -453,7 +452,7 @@ class Details extends React.Component<IDetailsProps, IDetailsState> {
         <div className="margin20">
           <Flex space="between">
             <div className="backButton pointer backButtonMessagingExtention" onClick={() => this.back()}>
-              <img src={backImage.default} /> <Text size="medium">Back</Text>
+              <img src={backImage} /> <Text size="medium">Back</Text>
             </div>
             <Flex gap="gap.small">
               <Button content="Cancel" onClick={() => microsoftTeams.tasks.submitTask()} />

@@ -1,0 +1,44 @@
+-----------Exception Details on  5/21/2021 8:47:04 PM-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 5/21/2021 8:47:04 PM
+
+Error Line No : ine 391
+
+Error Message: ErrorResponseException
+
+Exception Type: Microsoft.Bot.Schema.ErrorResponseException
+
+Error Location : Operation returned an invalid status code 'BadRequest'
+
+User Host IP: 
+
+
+--------------------------------*End*------------------------------------------
+
+
+
+-----------Exception Details on  5/21/2021 8:47:04 PM-----------------
+-------------------------------------------------------------------------------------
+
+
+
+Log Written Date: 5/21/2021 8:47:04 PM
+
+Error Line No : ine 391
+
+Error Message: ErrorResponseException
+
+Exception Type: Microsoft.Bot.Schema.ErrorResponseException
+
+Error Location : Operation returned an invalid status code 'BadRequest'
+
+User Host IP: 
+
+
+--------------------------------*End*------------------------------------------
+
+
+

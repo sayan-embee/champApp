@@ -4,6 +4,9 @@
     background-color: transparent !important;
     margin: 0 auto !important;
 }
+ .displayFlex{
+     display: flex;
+ }
 
 .badegCardWidth{
     max-width: 550px;
@@ -62,6 +65,12 @@
     font-weight:bold
 }
 
+.searchBox{
+    align-items: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 .searchList{
     text-align: left;
     width: 100%;
@@ -78,7 +87,7 @@
     display: none;
 }
 
-  .searchResultList:hover {
+  .searchBox:hover {
     background-color: rgba(0, 0, 0, 0.14);
     cursor: pointer;
     width: 100%;
@@ -108,10 +117,38 @@
       flex-direction: column;
      
   }
+
+  .profileImage{
+    height: 34px;
+    width: 34px;
+    margin-right: 5px;
+  }
   
 //   .personalChatMember span{
 //     font-size: 16px;
 //   }
+.showSelectedEmployeeDiv{
+    max-height: 110px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+.showSelectedEmployeeDiv::-webkit-scrollbar {
+    width: 5px;
+}
+
+  .showSelectedEmployeeDiv::-webkit-scrollbar-track {
+    background: #f1f1f1 !important; 
+  }
+   
+  .showSelectedEmployeeDiv::-webkit-scrollbar-thumb {
+    background: #888 !important; 
+  }
+  
+  .showSelectedEmployeeDiv::-webkit-scrollbar-thumb:hover {
+    background: #555 !important; 
+  }
 
   .detalisViswasDropdown li{
       cursor: pointer;

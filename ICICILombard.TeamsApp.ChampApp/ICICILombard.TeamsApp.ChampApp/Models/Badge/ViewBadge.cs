@@ -55,6 +55,10 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
         public string awardedByPhotoUrl { get; set; }
         public string UPN { get; set; }
         public string awardrecipentUserId { get; set; }
+        public string mentionText {get;set; }
+        public Award award { get; set; }
+
+
     }
 
 

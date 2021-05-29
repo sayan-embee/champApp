@@ -42,7 +42,6 @@ class EditBadge extends React.Component<IViswasEditProps, MyState> {
 
     componentDidMount() {
         const params = new URLSearchParams(this.props.location.search);
-        console.log("edit viswas params", params.get('id'));
         this.setState({
             cardId: params.get('id'),
         }, () => {
@@ -56,7 +55,6 @@ class EditBadge extends React.Component<IViswasEditProps, MyState> {
             "CardId": id
         }
         getApplauseCardAPI(data).then((res) => {
-            console.log("get ApplauseCard API", res.data);
             this.setState({
                 cardData: res.data,
                 base64Image: null,
@@ -115,7 +113,6 @@ class EditBadge extends React.Component<IViswasEditProps, MyState> {
     };
 
     onFileChoose(event: any) {
-        console.log("check", event.target.files[0], event.target.files[0].lastModified);
         this.getBase64(event.target.files[0], event.target.files[0].lastModified)
     }
 
@@ -123,13 +120,13 @@ class EditBadge extends React.Component<IViswasEditProps, MyState> {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-            console.log('Photo', reader.result);
+            // console.log('Photo', reader.result);
             this.setState({
                 base64Image: reader.result,
             })
         };
         reader.onerror = function (error) {
-            console.log('Error: ', error);
+            // console.log('Error: ', error);
         };
     }
 

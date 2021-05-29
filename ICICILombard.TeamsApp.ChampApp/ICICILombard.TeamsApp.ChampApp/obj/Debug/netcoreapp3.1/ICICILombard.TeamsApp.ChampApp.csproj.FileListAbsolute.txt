@@ -579,3 +579,4 @@ D:\champApp\ICICILombard.TeamsApp.ChampApp\ICICILombard.TeamsApp.ChampApp\obj\De
 D:\champApp\ICICILombard.TeamsApp.ChampApp\ICICILombard.TeamsApp.ChampApp\obj\Debug\netcoreapp3.1\ICICILombard.TeamsApp.ChampApp.dll
 D:\champApp\ICICILombard.TeamsApp.ChampApp\ICICILombard.TeamsApp.ChampApp\obj\Debug\netcoreapp3.1\ICICILombard.TeamsApp.ChampApp.pdb
 D:\champApp\ICICILombard.TeamsApp.ChampApp\ICICILombard.TeamsApp.ChampApp\obj\Debug\netcoreapp3.1\ICICILombard.TeamsApp.ChampApp.genruntimeconfig.cache
+D:\champApp\ICICILombard.TeamsApp.ChampApp\ICICILombard.TeamsApp.ChampApp\bin\Debug\netcoreapp3.1\Cards\JSONCards\TestCard - Copy.json

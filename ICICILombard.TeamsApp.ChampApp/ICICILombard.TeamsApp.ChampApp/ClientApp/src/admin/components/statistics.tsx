@@ -41,7 +41,6 @@ class Statistics extends React.Component<MyState> {
     }
 
     selectSearchByValueFunction = (data: any) => {
-        console.log(data);
         this.setState({
             selectedSearchByValue: data
         }, () => {
@@ -58,7 +57,7 @@ class Statistics extends React.Component<MyState> {
                 "CardId": 0
             }
             getApplauseCardAPI(data).then((res) => {
-                console.log("get ApplauseCard API", res.data);
+                // console.log("get ApplauseCard API", res.data);
                 let result = res.data.map((a: any) => a.cardName)
                 this.setState({
                     applauseCardList: res.data,
@@ -73,14 +72,14 @@ class Statistics extends React.Component<MyState> {
         }
         else {
             getAwardedEmployeeAPI().then((res) => {
-                console.log("get Awarded Employee API", res);
-                let AwardedEmployeeName = res.data.map((a: any) => a.employeeEmail)
+                // console.log("get Awarded Employee API", res);
+                let AwardedEmployeeName = res.data.map((a: any) => a.employeeName)
                 this.setState({
                     searchListInput: AwardedEmployeeName,
                     searchListInputValue:AwardedEmployeeName[0],
                     awardedEmployeeList: res.data,
-                    awardedEmployeeEmail: res.data[0].employeeName,
-                    awardedEmployeeName: res.data[0].employeeEmail
+                    awardedEmployeeEmail: res.data[0].employeeEmail,
+                    awardedEmployeeName: res.data[0].employeeName
 
                 }, () => {
                     this.search()
@@ -95,7 +94,7 @@ class Statistics extends React.Component<MyState> {
     getAwardList(data: any) {
         if (this.state.selectedSearchByValue === 'By Award') {
             getAwardListByCardAPI(data).then((res: any) => {
-                console.log("get award", res.data);
+                // console.log("get award", res.data);
                 this.setState({
                     awardList: res.data,
                     loading: false
@@ -104,7 +103,7 @@ class Statistics extends React.Component<MyState> {
         }
         else {
             getAwardListByRecipentAPI(data).then((res: any) => {
-                console.log("get award", res.data);
+                // console.log("get award", res.data);
                 this.setState({
                     awardList: res.data,
                     loading: false
@@ -126,10 +125,10 @@ class Statistics extends React.Component<MyState> {
             })
         }
         else {
-            this.state.awardedEmployeeList.filter((e: any) => e.employeeEmail === data).map((e: any) => {
+            this.state.awardedEmployeeList.filter((e: any) => e.employeeName === data).map((e: any) => {
                 this.setState({
-                    awardedEmployeeEmail: e.employeeName,
-                    awardedEmployeeName: e.employeeEmail
+                    awardedEmployeeEmail: e.employeeEmail,
+                    awardedEmployeeName: e.employeeName
                 })
             })
         }
@@ -199,8 +198,8 @@ class Statistics extends React.Component<MyState> {
                                     name="Shirley Larkin"
                                 /> */}
                                         <Flex column styles={{ padding: '5px' }}>
-                                            <Text content={e.recipentEmail} weight="bold" styles={{ color: "black" }} />
-                                            <Text content={e.recipentName} size="smallest" styles={{ color: "gray" }} />
+                                            <Text content={e.recipentName} weight="bold" styles={{ color: "black" }} />
+                                            <Text content={e.recipentEmail} size="smallest" styles={{ color: "gray" }} />
                                             <Text content={e.cardName} size="medium" styles={{ color: "#F17E21", marginTop: "4px" }} />
                                         </Flex>
                                         <FlexItem push>

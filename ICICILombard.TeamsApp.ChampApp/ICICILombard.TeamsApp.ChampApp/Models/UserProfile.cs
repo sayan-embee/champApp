@@ -39,6 +39,18 @@ namespace ICICILombard.TeamsApp.ChampApp.Models
 
         [JsonProperty("photoUrl")]
         public string PhotoUrl { get; set; }
+
+        [JsonProperty("department")]
+        public string Department { get; set; }
+
+        [JsonProperty("designation")]
+        public string Designation { get; set; }
+        [JsonProperty("reportingManagerName")]
+        public string ReportingManagerName { get; set; }
+        [JsonProperty("reportingManagerEmail")]
+        public string ReportingManagerEmail { get; set; }
+        [JsonProperty("reporitngManagerUPN")]
+        public string ReporitngManagerUPN { get; set; }
     }
 
     public class TeamMemberInfo

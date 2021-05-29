@@ -22,13 +22,13 @@ interface IState {
     groupId?: any;
     userId?: any;
    chatId?: any;
-   personalChat?:any;
    UPN?: any;
    channelName?:any;
    loading?: any;
     channelId?: any;
     userObjectId?:any;
-    selectedBadgeId?:any
+    selectedBadgeId?:any;
+    teamName?:any;
 }
 
 class Badges extends React.Component<IProps, IState> {
@@ -63,17 +63,15 @@ class Badges extends React.Component<IProps, IState> {
                 "userId": context.userObjectId && context.userObjectId,
                 "UPN":context.userPrincipalName && context.userPrincipalName,
                 "chatId":context.chatId && context.chatId,
-                "personalChat" : context.chatId ? true: false,
                 "channelName":context.channelName && context.channelName,
+                "teamName":context.teamName && context.teamName,
                 "userObjectId":context.userObjectId && context.userObjectId
             
             })
-            console.log("context check log 1", context);
         });
 
         const search = window.location.search;
         const params = new URLSearchParams(search);
-        console.log("context check log 1", params.get("badgeId"));
         this.setState({
             token: params.get("token"),
             theme: params.get("theme"),
@@ -103,8 +101,6 @@ class Badges extends React.Component<IProps, IState> {
             "CardId": 0
         }
         getApplauseCardAPI(data).then((res)=>{
-            
-
             const badgeData = res.data.filter((e:any)=>e.isActive===1).map((e: any) => {
                 let b = {
                     "badgeName": e.cardName,
@@ -130,20 +126,17 @@ class Badges extends React.Component<IProps, IState> {
         this.setState({
             badgeName: data.name,
         }, () => {
-            this.props.history.push({ pathname: "/details", state: { data: data, token: this.state.token, groupId: this.state.groupId, chatId:this.state.chatId,  userId:this.state.userId, UPN:this.state.UPN, channelName:this.state.channelName, teamId:this.state.teamId, channelId:this.state.channelId, userObjectId:this.state.userObjectId } })
+            this.props.history.push({ pathname: "/details", state: { data: data, token: this.state.token, groupId: this.state.groupId, chatId:this.state.chatId,  userId:this.state.userId, UPN:this.state.UPN, channelName:this.state.channelName, teamId:this.state.teamId, channelId:this.state.channelId, userObjectId:this.state.userObjectId, teamName:this.state.teamName } })
         })
     }
 
 
     render() {
-        console.log("sayan",this.state.selectedBadgeId);
-        
-
-        return (
+       return (
             <div>
                 <Card fluid className="containerCard badegCardWidth">
                 {!this.state.loading?<CardBody styles={{marginTop:"20px"}}>
-                        <Flex hAlign="center" vAlign="center" padding="padding.medium"><Text>Select an Applaud award</Text></Flex>
+                        <Flex hAlign="center" vAlign="center" padding="padding.medium"><Text>Choose a card</Text></Flex>
                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gridGap: 20 }} className="badgeImageCardGridDiv">
                             {this.state.Badge && this.state.Badge.map((e: any) => {
                                 return <div className={`badgeImageCard ${(this.state.selectedBadgeId === e.badgeId) && 'selectedBadge' } `}><Card onClick={() => this.check(e)} ghost centered className={`badgeImageCard ${(this.state.selectedBadgeId === e.badgeId) && 'selectedBadge' } `}>
